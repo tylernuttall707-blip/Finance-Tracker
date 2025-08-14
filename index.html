@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Finance & Credit Card Tracker — v30.1</title>
+<title>Finance & Credit Card Tracker</title>
 <style>
   :root{
     --bg:#F7F8FB; --panel:#FFFFFF; --panel-2:#F3F5F9; --border:#E3E8EF;
@@ -153,9 +153,15 @@ const ThemePresets = {
 };
 function applyThemeTokens(){
   const mode = state.theme || 'light';
-  const preset = (mode==='dark'? state.themeDarkPreset : state.themeLightPreset) || (mode==='dark'?'obsidian':'cloud');
+  const preset = (mode==='dark' ? state.themeDarkPreset : state.themeLightPreset) || (mode==='dark' ? 'obsidian' : 'cloud');
   const tokens = ThemePresets[mode][preset];
   const root = document.documentElement;
+
+  // Content width (ultrawide support)
+  root.style.setProperty('--content-max',
+    state.ui?.fullWidth ? '100vw' : ((state.ui?.contentMaxPx || 2200) + 'px')
+  );
+
   root.style.setProperty('--bg', tokens.bg);
   root.style.setProperty('--panel', tokens.panel);
   root.style.setProperty('--panel-2', tokens.panel2);
@@ -166,9 +172,9 @@ function applyThemeTokens(){
   root.style.setProperty('--accent', state.accentColor || tokens.accent);
   root.style.setProperty('--ring', tokens.ring);
   root.style.setProperty('--shadow', tokens.shadow);
-  root.style.setProperty('--radius', (state.ui?.radiusPx||16)+'px');
-  root.style.setProperty('--cols-3', `1fr ${state.ui?.centerWeight||1.6}fr 1fr`);
-  root.style.setProperty('--gradient-alpha', String(state.ui?.gradientAlpha ?? .06));
+  root.style.setProperty('--radius', (state.ui?.radiusPx || 16) + 'px');
+  root.style.setProperty('--cols-3', `1fr ${state.ui?.centerWeight || 1.6}fr 1fr`);
+  root.style.setProperty('--gradient-alpha', String(state.ui?.gradientAlpha ?? 0.06));
 }
 
 /* ---------- Storage & State ---------- */
@@ -179,26 +185,58 @@ function seed(){
   const a1={id:uid(),name:'Operating Checking',bank:'',number:'...1234',type:'bank',color:'#0ea5e9'};
   const l1={id:uid(),name:'Van Loan',bank:'',number:'...9012',type:'loan',apr:6.5,color:'#f97316'};
   return {
-    company:'Company Finance', logoData:'',
-    theme:'light', themeLightPreset:'cloud', themeDarkPreset:'obsidian', accentColor:'#2B73F7',
-    section:'overview', ccView:'dashboard', finView:'dashboard',
-    ui:{ sidebarCollapsed:false, centerWeight:1.6, gradientAlpha:.06, radiusPx:16, customizing:null, ccDraft:{}, finDraft:{}, histFilter:{mode:'selected',from:'',to:''}, companyDraft:'' },
-    cards:[c1], entries:[], selectedCardId:c1.id,
-    finAccounts:[a1,l1], finEntries:[], finExpenses:[],
-    order_overview:['ov_finKpis','ov_ccLine','ov_netLine'],
-    order_cc:['cc_cardsGrid','cc_kpis','cc_line','cc_availLine','cc_remainLine','cc_bar','cc_remainBar','cc_dueSoon','cc_utilLadder','cc_changedToday','cc_payCalendar','cc_agingBuckets','cc_exposureIssuer'],
-    order_fin:['fin_kpis','fin_cashLine','fin_debtLine','fin_netLine','fin_upcoming'],
-    widgetSize:{}, widgetHeightMode:{}, widgetFixedH:{}, widgetCfg:{}
+   company:'Company Finance', logoData:'',
+   theme:'light', themeLightPreset:'cloud', themeDarkPreset:'obsidian', accentColor:'#2B73F7',
+   section:'overview', ccView:'dashboard', finView:'dashboard',
+   ui:{
+     sidebarCollapsed:false, centerWeight:1.6, gradientAlpha:.06, radiusPx:16,
+     customizing:null, ccDraft:{}, finDraft:{}, histFilter:{mode:'selected',from:'',to:''},
+     companyDraft:'',
+     // NEW:
+     fullWidth:false,
+     contentMaxPx:2200,
+     colCount:{overview:3, credit:3, financials:3},
+     ccCardsCols:2
+   },
+   cards:[c1], entries:[], selectedCardId:c1.id,
+   finAccounts:[a1,l1], finEntries:[], finExpenses:[],
+   order_overview:['ov_finKpis','ov_ccLine','ov_netLine'],
+   order_cc:['cc_cardsGrid','cc_kpis','cc_line','cc_availLine','cc_remainLine','cc_bar','cc_remainBar','cc_dueSoon','cc_utilLadder','cc_changedToday','cc_payCalendar','cc_agingBuckets','cc_exposureIssuer'],
+   order_fin:['fin_kpis','fin_cashLine','fin_debtLine','fin_netLine','fin_upcoming'],
+   widgetSize:{}, widgetHeightMode:{}, widgetFixedH:{},
+   // NEW:
+   widgetCfg:{},
+   widgetCol:{},            // widgetId -> column index (1..N)
+   cardOrder:[]            // array of card ids for Cards Overview ordering
  };
 }
-function load(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return null; const obj=JSON.parse(raw);
-  // Defensive migrations
-  ['order_overview','order_cc','order_fin'].forEach(k=>{ if(!Array.isArray(obj[k])) obj[k]=[]; });
-  obj.ui = obj.ui || {}; obj.ui.companyDraft='';
-  obj.widgetCfg = obj.widgetCfg || {};
-  return obj; }catch{ return null; } }
-let saveTimer=null;
-function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, 120); applyThemeTokens(); }
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const obj = JSON.parse(raw);
+
+    // Defensive migrations
+    ['order_overview','order_cc','order_fin'].forEach(k=>{
+      if(!Array.isArray(obj[k])) obj[k] = [];
+    });
+
+    // Existing fields
+    obj.ui = obj.ui || {};
+    obj.ui.companyDraft = obj.ui.companyDraft || '';
+    obj.widgetCfg = obj.widgetCfg || {};
+
+    // ⬇️ ADD THESE DEFAULTS
+    obj.ui.colCount = obj.ui.colCount || { overview:3, credit:3, financials:3 };
+    if (obj.ui.ccCardsCols == null) obj.ui.ccCardsCols = 2;
+    obj.widgetCol = obj.widgetCol || {};
+    obj.cardOrder = obj.cardOrder || [];
+
+    return obj;
+  }catch{
+    return null;
+  }
+}
 
 /* ---------- Derived / KPIs with caching ---------- */
 const cache={vers:{cards:0,entries:0,finAccounts:0,finEntries:0}, latestByCard:null, kpisCC:null, sTotal:null,sAvail:null,sRemain:null, finLatest:null,finKPIs:null};
@@ -472,7 +510,7 @@ function appSidebar(){
 }
 function appHeader(){
   return h('div',{class:'header'},
-    h('div',null, h('h1',null, (state.company||'Company Finance')+' — v30.1'),
+    h('div',null, h('h1',null, (state.company||'Company Finance')),
       h('div',{class:'muted'}, 'Stable dashboards • debounced branding • more settings')),
     h('div',{style:'display:flex;gap:8px;align-items:center;'},
       h('label',{class:'btn'}, 'Import JSON',
@@ -1051,35 +1089,74 @@ function settingsSection(){
     nameTimer=setTimeout(()=>{ state.company = state.ui.companyDraft || 'Company Finance'; save(); render(); }, 500);
   }
 
-  const themePanel=h('div',{class:'panel p4'},
-    sectionTitle('Theme & Appearance'),
-    h('div',{class:'grid grid-2'},
-      h('div',{class:'field'}, h('label',null,'Mode'),
-        h('select',{onchange:e=>{ state.theme=e.target.value; save(); render(); }},
-          h('option',{value:'light', selected: state.theme==='light'?'selected':null}, 'Light'),
-          h('option',{value:'dark', selected: state.theme==='dark'?'selected':null}, 'Dark')
-        )
-      ),
-      h('div',{class:'field'}, h('label',null,'Accent'),
-        h('input',{type:'color', value: state.accentColor||'#2B73F7', oninput:e=>{ state.accentColor=e.target.value; save(); }})
-      ),
-      h('div',{class:'field'}, h('label',null,'Light preset'),
-        h('select',{onchange:e=>{ state.themeLightPreset=e.target.value; save(); render(); }}, ...lightKeys.map(k=> h('option',{value:k, selected: state.themeLightPreset===k?'selected':null}, k)))
-      ),
-      h('div',{class:'field'}, h('label',null,'Dark preset'),
-        h('select',{onchange:e=>{ state.themeDarkPreset=e.target.value; save(); render(); }}, ...darkKeys.map(k=> h('option',{value:k, selected: state.themeDarkPreset===k?'selected':null}, k)))
-      ),
-      h('div',{class:'field'}, h('label',null,'Card gradient (subtle)'),
-        h('input',{type:'range',min:'0',max:'.12',step:'.01',value:String(state.ui.gradientAlpha??.06), oninput:e=>{ state.ui.gradientAlpha=parseFloat(e.target.value); save(); render(); }})
-      ),
-      h('div',{class:'field'}, h('label',null,'Corner radius'),
-        h('input',{type:'range',min:'10',max:'20',step:'1',value:String(state.ui.radiusPx||16), oninput:e=>{ state.ui.radiusPx=Number(e.target.value); save(); render(); }})
-      ),
-      h('div',{class:'field'}, h('label',null,'Center column weight'),
-        h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); render(); }})
-      )
-    )
-  );
+  const themePanel = h('div',{class:'panel p4'},
+   sectionTitle('Theme & Appearance'),
+   h('div',{class:'grid grid-2'},
+ 
+     // Mode
+     h('div',{class:'field'}, h('label',null,'Mode'),
+       h('select',{onchange:e=>{ state.theme=e.target.value; save(); render(); }},
+         h('option',{value:'light', selected: state.theme==='light'?'selected':null}, 'Light'),
+         h('option',{value:'dark',  selected: state.theme==='dark' ?'selected':null}, 'Dark')
+       )
+     ),
+
+     // Accent color
+     h('div',{class:'field'}, h('label',null,'Accent'),
+       h('input',{type:'color', value: state.accentColor||'#2B73F7',
+         oninput:e=>{ state.accentColor=e.target.value; save(); }})
+     ),
+
+     // Presets
+     h('div',{class:'field'}, h('label',null,'Light preset'),
+       h('select',{onchange:e=>{ state.themeLightPreset=e.target.value; save(); render(); }},
+         ...lightKeys.map(k=> h('option',{value:k, selected: state.themeLightPreset===k?'selected':null}, k)))
+     ),
+     h('div',{class:'field'}, h('label',null,'Dark preset'),
+       h('select',{onchange:e=>{ state.themeDarkPreset=e.target.value; save(); render(); }},
+         ...darkKeys.map(k=> h('option',{value:k, selected: state.themeDarkPreset===k?'selected':null}, k)))
+     ),
+
+     // Card gradient
+     h('div',{class:'field'}, h('label',null,'Card gradient (subtle)'),
+       h('input',{type:'range',min:'0',max:'.12',step:'.01',
+         value:String(state.ui.gradientAlpha??.06),
+         oninput:e=>{ state.ui.gradientAlpha=parseFloat(e.target.value); save(); render(); }})
+     ),
+
+     // Radius
+     h('div',{class:'field'}, h('label',null,'Corner radius'),
+       h('input',{type:'range',min:'10',max:'20',step:'1',
+         value:String(state.ui.radiusPx||16),
+         oninput:e=>{ state.ui.radiusPx=Number(e.target.value); save(); render(); }})
+     ),
+
+     // Center column weight
+     h('div',{class:'field'}, h('label',null,'Center column weight'),
+       h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',
+         value:String(state.ui.centerWeight||1.6),
+         oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); render(); }})
+     ),
+
+     // NEW: Full-width toggle
+     h('div',{class:'field'}, h('label',null,'Full width (ultrawide)'),
+       h('select',{onchange:e=>{ state.ui.fullWidth = (e.target.value==='yes'); save(); render(); }},
+         h('option',{value:'no',  selected:!state.ui.fullWidth?'selected':null},'No'),
+         h('option',{value:'yes', selected: state.ui.fullWidth?'selected':null},'Yes'))
+     ),
+
+     // NEW: Max width when not full
+     h('div',{class:'field'}, h('label',null,'Max width (px when not full)'),
+       h('input',{type:'number', min:'1200', max:'4000',
+         value:String(state.ui.contentMaxPx ?? 2200),
+         oninput:e=>{
+           state.ui.contentMaxPx = clamp(Number(e.target.value||2200), 1200, 4000);
+           save(); applyThemeTokens();
+         }})
+     )
+
+   )
+ );
 
   const orgPanel=h('div',{class:'panel p4'},
     sectionTitle('Branding'),
