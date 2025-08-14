@@ -16,10 +16,19 @@
   body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans"}
   .app{max-width:var(--content-max);margin:0 auto;padding:16px 16px 24px}
   .layout{display:grid;gap:16px}
-  .sidebar {
+  .sidebar{
     background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
+   border:1px solid var(--border);
+   border-radius:var(--radius);
+   box-shadow:var(--shadow);
+   padding:12px;
+   position:sticky;
+   top:12px;
+  height:calc(100vh - 24px);
+   display:flex;
+   flex-direction:column;
+   overflow:hidden;
+}
   .brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   .brand .logo{width:28px;height:28px;border-radius:8px;background:var(--accent);background-size:cover;background-position:center center}
   .brand .title{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -364,7 +373,7 @@ function addWidgetControls(wrapper, id, orderKey){
     h('div',{class:'field',style:'width:110px;'+(hmode==='fixed'?'':'display:none;')}, h('label',null,'Pixels'),
       h('input',{type:'number',value:String(state.widgetFixedH[id]||320),oninput:e=>{ state.widgetFixedH[id]=e.target.value; save(); render(); }})
      ),
-     +   h('button',{class:'btn tiny',onclick:()=> configureWidget(id)},'Configure'),
+      h('button',{class:'btn tiny',onclick:()=> configureWidget(id)},'Configure'),
       h('button',{class:'btn tiny',onclick:()=>{ state[orderKey]=state[orderKey].filter(x=>x!==id); save(); render(); }},'Remove')
   );
   wrapper.prepend(row);
@@ -1147,4 +1156,4 @@ function render(){
 applyThemeTokens(); render();
 </script>
 </body>
-}</html>
+</html>
