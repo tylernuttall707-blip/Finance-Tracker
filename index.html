@@ -16,7 +16,10 @@
   body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans"}
   .app{max-width:var(--content-max);margin:0 auto;padding:16px 16px 24px}
   .layout{display:grid;gap:16px}
-  .sidebar{background:var(--panel);border:1px solid var(--border);border-radius:var(---radius);box-shadow:var(--shadow);padding:12px;position:sticky;top:12px;height:calc(100vh - 24px);display:flex;flex-direction:column;overflow:hidden}
+  .sidebar {
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
   .brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   .brand .logo{width:28px;height:28px;border-radius:8px;background:var(--accent);background-size:cover;background-position:center center}
   .brand .title{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -176,13 +179,14 @@ function seed(){
     order_overview:['ov_finKpis','ov_ccLine','ov_netLine'],
     order_cc:['cc_cardsGrid','cc_kpis','cc_line','cc_availLine','cc_remainLine','cc_bar','cc_remainBar','cc_dueSoon','cc_utilLadder','cc_changedToday','cc_payCalendar','cc_agingBuckets','cc_exposureIssuer'],
     order_fin:['fin_kpis','fin_cashLine','fin_debtLine','fin_netLine','fin_upcoming'],
-    widgetSize:{}, widgetHeightMode:{}, widgetFixedH:{}
-  };
+    widgetSize:{}, widgetHeightMode:{}, widgetFixedH:{}, widgetCfg:{}
+ };
 }
 function load(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return null; const obj=JSON.parse(raw);
   // Defensive migrations
   ['order_overview','order_cc','order_fin'].forEach(k=>{ if(!Array.isArray(obj[k])) obj[k]=[]; });
   obj.ui = obj.ui || {}; obj.ui.companyDraft='';
+  obj.widgetCfg = obj.widgetCfg || {};
   return obj; }catch{ return null; } }
 let saveTimer=null;
 function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, 120); applyThemeTokens(); }
@@ -226,23 +230,104 @@ function finKPIs(){
   const m=finLatestByAccount(); let cash=0,debt=0; for(const a of state.finAccounts){ const bal=Number(m[a.id]?.balance)||0; if(a.type==='bank') cash+=bal; else if(a.type==='loan') debt+=bal; }
   cache.finKPIs={cash,debt,net:cash-debt,_vA:cache.vers.finAccounts,_vE:cache.vers.finEntries}; return cache.finKPIs;
 }
+/* ---------- Widget configuration helpers ---------- */
+function defaultWidgetCfg(id){
+  return {
+    chartType:'auto',       // auto | line | bar | pie
+    color:null,             // single-series color
+    palette:'card',         // card | mono
+    yMin:null, yMax:null,   // axis overrides
+    from:'', to:'',         // date filter
+    cards:'all',            // all | [cardIds]
+    sort:{by:null, dir:'desc'},
+    groupBy:null            // e.g., 'issuer'
+  };
+}
+function getCfg(id){ return state.widgetCfg[id] || defaultWidgetCfg(id); }
+function setCfg(id,patch){ state.widgetCfg[id]=Object.assign(getCfg(id), patch); save(); }
+
+// Filters / utils
+function filterSeriesByCfg(series, cfg){
+  return series.filter(p => (!cfg.from || p.date>=cfg.from) && (!cfg.to || p.date<=cfg.to));
+}
+function filterCardsByCfg(cards, cfg){
+  if (!cards || !cards.length) return cards;
+  if (cfg.cards==='all' || !Array.isArray(cfg.cards)) return cards;
+  const set = new Set(cfg.cards); return cards.filter(c => set.has(c.id));
+}
+function subtotalBy(items, groupKey, valueKey){
+  const map=new Map();
+  items.forEach(it=>{
+    const k = it[groupKey] ?? '—';
+    const v = Number(it[valueKey])||0;
+    map.set(k,(map.get(k)||0)+v);
+  });
+  return Array.from(map.entries()).map(([label,value])=>({label,value}));
+}
+function sortBy(list, key, dir='desc'){
+  const s = list.slice().map((x,i)=>({x,i}));
+  s.sort((a,b)=>{
+    const va=a.x[key], vb=b.x[key];
+    const cmp = (va>vb)-(va<vb) || (a.i-b.i);
+    return dir==='asc'? cmp : -cmp;
+  });
+  return s.map(w=>w.x);
+}
 
 /* ---------- Charts ---------- */
-function lineChart(data,{height=160}={}){
+function lineChart(data,{height=160,color,yMin=null,yMax=null}={}){
   if(!data||!data.length) return h('div',{class:'muted'},'No data');
-  const W=720,H=height,P=28; const ys=data.map(d=>Number(d.y)||0); const min=Math.min(...ys), max=Math.max(...ys); const range=(max-min)||1; const step=(W-P*2)/Math.max(1,data.length-1);
-  const pts=data.map((d,i)=>[P+i*step, P+(H-P*2)*(1-((Number(d.y)-min)/range))]); const dPath=pts.map(([x,y],i)=>(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1)).join(' ');
-  return h('svg',{viewBox:`0 0 ${W} ${H}`, style:{width:'100%',height:(H+20)+'px'}}, h('path',{d:dPath,fill:'none',stroke:'currentColor','stroke-width':'2'}));
+  const W=720,H=height,P=28;
+  const ys=data.map(d=>Number(d.y)||0);
+  let min=Math.min(...ys), max=Math.max(...ys);
+  if (yMin!=null) min = Number(yMin);
+  if (yMax!=null) max = Number(yMax);
+  const range=(max-min)||1;
+  const step=(W-P*2)/Math.max(1,data.length-1);
+  const pts=data.map((d,i)=>[P+i*step, P+(H-P*2)*(1-((Number(d.y)-min)/range))]);
+  const dPath=pts.map(([x,y],i)=>(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1)).join(' ');
+  return h('svg',{viewBox:`0 0 ${W} ${H}`, style:{width:'100%',height:(H+20)+'px'}},
+    h('path',{d:dPath,fill:'none',stroke:color||'currentColor','stroke-width':'2'})
+  );
 }
-function barChart(items,{colors=[],valueSuffix='',currency=false}={}){
+function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
-  const W=720,H=200,P=28,G=12,N=items.length,BAR=(W-P*2-(N-1)*G)/Math.max(1,N); const maxVal=currency?Math.max(1,...items.map(i=>i.value||0)):Math.max(100, 150, ...items.map(i=>i.value||0));
+  const W=720,H=200,P=28,G=12,N=items.length,BAR=(W-P*2-(N-1)*G)/Math.max(1,N);
+  let vals=items.map(i=>Number(i.value)||0);
+  let minVal=Math.min(0,...vals), maxVal=Math.max(1,...vals);
+  if (yMin!=null) minVal=Number(yMin);
+  if (yMax!=null) maxVal=Number(yMax);
+  const span=(maxVal-minVal)||1;
   const g=h('svg',{viewBox:`0 0 ${W} ${H}`, style:{width:'100%',height:'210px'}});
-  items.forEach((it,idx)=>{ const x=P+idx*(BAR+G); const val=Number(it.value)||0; const bh=(H-P*2)*(val/maxVal); const y=H-P-bh; const fill=colors[idx]||'currentColor';
+  items.forEach((it,idx)=>{
+    const x=P+idx*(BAR+G);
+    const val=Number(it.value)||0;
+    const ratio=(val-minVal)/span;
+    const bh=(H-P*2)*ratio;
+    const y=H-P-bh;
+    const fill=colors[idx]||'currentColor';
     g.appendChild(h('rect',{x,y,width:BAR,height:bh,fill,opacity:.22}));
     g.appendChild(h('text',{x:x+BAR/2,y:H-8,'text-anchor':'middle',style:'font-size:10px;fill:var(--muted);'}, (it.label||'').slice(0,16)+(it.label&&it.label.length>16?'…':'')));
     const top=currency?('$'+val.toLocaleString()):(val+valueSuffix);
     g.appendChild(h('text',{x:x+BAR/2,y:y-4,'text-anchor':'middle',style:'font-size:10px;fill:var(--muted);'}, top));
+  });
+  return g;
+}
+function pieChart(items,{colors=[]}={}){
+  if(!items||!items.length) return h('div',{class:'muted'},'No data');
+  const W=220,H=220,R=90,CX=W/2,CY=H/2;
+  const total=items.reduce((s,i)=>s+(Number(i.value)||0),0)||1;
+  let a0=0;
+  const g=h('svg',{viewBox:`0 0 ${W} ${H}`, style:{width:'100%',height:'240px'}});
+  items.forEach((it,idx)=>{
+    const v=Math.max(0, Number(it.value)||0);
+    const a1=a0 + (v/total)*Math.PI*2;
+    const x0=CX+R*Math.cos(a0), y0=CY+R*Math.sin(a0);
+    const x1=CX+R*Math.cos(a1), y1=CY+R*Math.sin(a1);
+    const large = (a1-a0) > Math.PI ? 1 : 0;
+    const path = `M ${CX} ${CY} L ${x0} ${y0} A ${R} ${R} 0 ${large} 1 ${x1} ${y1} Z`;
+    g.appendChild(h('path',{d:path,fill:colors[idx]||'currentColor',opacity:.85}));
+    a0=a1;
   });
   return g;
 }
@@ -278,8 +363,9 @@ function addWidgetControls(wrapper, id, orderKey){
     ),
     h('div',{class:'field',style:'width:110px;'+(hmode==='fixed'?'':'display:none;')}, h('label',null,'Pixels'),
       h('input',{type:'number',value:String(state.widgetFixedH[id]||320),oninput:e=>{ state.widgetFixedH[id]=e.target.value; save(); render(); }})
-    ),
-    h('button',{class:'btn tiny',onclick:()=>{ state[orderKey]=state[orderKey].filter(x=>x!==id); save(); render(); }},'Remove')
+     ),
+     +   h('button',{class:'btn tiny',onclick:()=> configureWidget(id)},'Configure'),
+      h('button',{class:'btn tiny',onclick:()=>{ state[orderKey]=state[orderKey].filter(x=>x!==id); save(); render(); }},'Remove')
   );
   wrapper.prepend(row);
 }
@@ -295,6 +381,53 @@ function enableDrag(container, orderKey){
   $$('#'+grid.id+' > [data-widget-id]').forEach(el=>{
     el.addEventListener('dragstart', onDragStart); el.addEventListener('dragover', onDragOver); el.addEventListener('drop', onDrop); el.addEventListener('dragend', onDragEnd);
   });
+}
+/* ---------- Configure modal ---------- */
+function showModal(title, contentBuilder, onSave){
+  const scrim=h('div',{style:'position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;z-index:10000;'});
+  const card=h('div',{class:'panel p4',style:'width:680px;max-width:94vw;'});
+  card.appendChild(h('div',{class:'title'}, title));
+  const body=h('div'); card.appendChild(body);
+  const row=h('div',{style:'display:flex;justify-content:flex-end;gap:8px;margin-top:10px;'});
+  row.appendChild(h('button',{class:'btn tiny',onclick:()=>scrim.remove()},'Cancel'));
+  row.appendChild(h('button',{class:'btn tiny primary',onclick:()=>{ onSave&&onSave(); scrim.remove(); render(); }},'Save'));
+  card.appendChild(row); scrim.appendChild(card); document.body.appendChild(scrim);
+  contentBuilder(body);
+  return scrim;
+}
+function configureWidget(id){
+  const cfg = Object.assign({}, getCfg(id));
+  showModal('Configure widget', (wrap)=>{
+    wrap.appendChild(h('div',{class:'grid grid-2'},
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'Chart type'));
+        const sel=h('select',{onchange:e=>cfg.chartType=e.target.value},
+          ...['auto','line','bar','pie'].map(v=>h('option',{value:v,selected:cfg.chartType===v?'selected':null},v)));
+        f.appendChild(sel); return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'Series color'));
+        f.appendChild(h('input',{type:'color', value: cfg.color || '#3b82f6', oninput:e=>cfg.color=e.target.value}));
+        return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'Palette'));
+        const sel=h('select',{onchange:e=>cfg.palette=e.target.value},
+          h('option',{value:'card',selected:cfg.palette==='card'?'selected':null},'Use card colors'),
+          h('option',{value:'mono',selected:cfg.palette==='mono'?'selected':null},'Single color'));
+        f.appendChild(sel); return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'Y min'));
+        f.appendChild(h('input',{type:'number',value:cfg.yMin??'',oninput:e=>cfg.yMin=e.target.value===''?null:Number(e.target.value)}));
+        return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'Y max'));
+        f.appendChild(h('input',{type:'number',value:cfg.yMax??'',oninput:e=>cfg.yMax=e.target.value===''?null:Number(e.target.value)}));
+        return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'From date'));
+        f.appendChild(h('input',{type:'date',value:cfg.from||'',oninput:e=>cfg.from=e.target.value})); return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'To date'));
+        f.appendChild(h('input',{type:'date',value:cfg.to||'',oninput:e=>cfg.to=e.target.value})); return f; })(),
+      (function(){ const f=h('div',{class:'field'}, h('label',null,'Group by (subtotals)'));
+        const sel=h('select',{onchange:e=>cfg.groupBy=e.target.value},
+          h('option',{value:'',selected:!cfg.groupBy?'selected':null},'None'),
+          h('option',{value:'issuer',selected:cfg.groupBy==='issuer'?'selected':null},'Issuer')
+        ); f.appendChild(sel); return f; })()
+    ));
+  }, ()=> setCfg(id, cfg));
 }
 
 /* ---------- App chrome ---------- */
@@ -715,15 +848,49 @@ function finUpcoming(){
 /* ----- Widgets registry (populate AFTER helpers defined) ----- */
 Object.assign(WidgetRegistry, {
   ov_finKpis:{label:'Financial KPIs', size:2, build:()=>[sectionTitle('Financial KPIs'), h('div',{class:'grid grid-2'}, kpi('Cash (banks)', fmtUSD(finKPIs().cash)), kpi('Debt (loans)', fmtUSD(finKPIs().debt)), kpi('Net (cash - debt)', fmtUSD(finKPIs().net)), kpi('CC Remaining', fmtUSD(kpisCC().totalRemain)))]},
-  ov_ccLine:{label:'Total CC Balance Over Time', size:2, build:()=>[sectionTitle('Total CC Balance Over Time'), lineChart(summedSeries('totalBalance'),{height:160})]},
+  ov_ccLine:{label:'Total CC Balance Over Time', size:2, build:()=>{
+  const id='ov_ccLine', cfg=getCfg(id);
+  let s = summedSeries('totalBalance');
+  s = filterSeriesByCfg(s, cfg);
+  const chart = (cfg.chartType==='bar')
+    ? barChart(s.map(p=>({label:p.date,value:p.y})),{yMin:cfg.yMin,yMax:cfg.yMax,currency:true})
+    : lineChart(s,{height:160,color:cfg.color,yMin:cfg.yMin,yMax:cfg.yMax});
+  return [sectionTitle('Total CC Balance Over Time'), chart];
+}},
   ov_netLine:{label:'Net Worth Over Time', size:2, build:()=>[sectionTitle('Net Worth Over Time'), (function(){ const cash=seriesFrom(e=> getAcc(e.accountId)?.type==='bank'); const debt=seriesFrom(e=> getAcc(e.accountId)?.type==='loan'); const map=new Map(); for(const p of cash) map.set(p.date,(map.get(p.date)||0)+Number(p.y||0)); for(const p of debt) map.set(p.date,(map.get(p.date)||0)-Number(p.y||0)); const s=Array.from(map.entries()).sort().map(([date,y])=>({date,y})); return lineChart(s,{height:160}); })()]},
   cc_cardsGrid:{label:'Cards Overview', size:2, build:()=> ccCardsGridWidget()},
   cc_kpis:{label:'CC KPIs', size:1, build:()=>[sectionTitle('KPIs'), (function(){ const ccK=kpisCC(); return h('div',{class:'grid grid-2'}, kpi('Total Balance (latest)', fmtUSD(ccK.totalBalance)), kpi(`Due in ≤ 5 days`, fmtUSD(ccK.totalDueSoon)), kpi('Avg Utilization', ccK.avgUtil!=null ? (ccK.avgUtil*100).toFixed(1)+'%':'—'), kpi('Total Over Limit', fmtUSD(ccK.totalOverLimit)), kpi('Total Available', fmtUSD(ccK.totalAvail)), kpi('Total Remaining', fmtUSD(ccK.totalRemain))); })()]},
   cc_line:{label:'Total Balance Over Time', size:2, build:()=>[sectionTitle('Total Balance Over Time'), lineChart(summedSeries('totalBalance'),{height:180})]},
   cc_availLine:{label:'Total Available Over Time', size:2, build:()=>[sectionTitle('Total Available Over Time'), lineChart(summedSeries('availableCredit'),{height:180})]},
   cc_remainLine:{label:'Total Remaining Statement Over Time', size:2, build:()=>[sectionTitle('Total Remaining Statement Over Time'), lineChart(summedSeries('amountDue'),{height:180})]},
-  cc_bar:{label:'Utilization by Card', size:2, build:()=> (function(){ const latest=latestByCard(); const utilItems=state.cards.map(c=>{ const last=latest[c.id]; const util=(c.limit&&last?.totalBalance!=null)?(Number(last.totalBalance)/Number(c.limit)):0; return {label:c.name, value: Math.min(150, Math.round(util*100))}; }); const utilColors=state.cards.map(c=>c.color||'#3b82f6'); return [sectionTitle('Utilization by Card (latest)'), barChart(utilItems,{colors:utilColors,valueSuffix:'%'})]; })()},
-  cc_remainBar:{label:'Remaining Statement by Card', size:2, build:()=> (function(){ const latest=latestByCard(); const remItems=state.cards.map(c=>({label:c.name, value:Number(latest[c.id]?.amountDue)||0})); const remColors=state.cards.map(c=>c.color||'#3b82f6'); return [sectionTitle('Remaining Statement by Card (latest)'), barChart(remItems,{colors:remColors,currency:true})]; })()},
+  cc_bar:{label:'Utilization by Card', size:2, build:()=> (function(){
+  const id='cc_bar', cfg=getCfg(id); const latest=latestByCard();
+  const cards = filterCardsByCfg(state.cards, cfg);
+  const utilItems=cards.map(c=>{
+    const last=latest[c.id];
+    const util=(c.limit&&last?.totalBalance!=null)?(Number(last.totalBalance)/Number(c.limit)):0;
+    return {label:c.name, issuer:c.issuer, value: Math.min(150, Math.round(util*100))};
+  });
+  const colors = (cfg.palette==='mono') ? utilItems.map(_=> cfg.color||'#3b82f6') : cards.map(c=>c.color||'#3b82f6');
+  const chart = (cfg.chartType==='pie') ? pieChart(utilItems,{colors})
+               : barChart(utilItems,{colors,valueSuffix:'%',yMin:cfg.yMin,yMax:cfg.yMax});
+  const parts=[sectionTitle('Utilization by Card (latest)'), chart];
+  if (cfg.groupBy==='issuer'){
+    const subs=subtotalBy(utilItems,'issuer','value');
+    parts.push(h('table',{class:'table'}, h('thead',null,h('tr',null,h('th',null,'Issuer'),h('th',null,'Subtotal %'))),
+      h('tbody',null, ...subs.map(s=>h('tr',null,h('td',null,s.label),h('td',null,(s.value).toFixed(1)+'%'))))));
+  }
+  return parts;
+})()},
+  cc_remainBar:{label:'Remaining Statement by Card', size:2, build:()=> (function(){
+  const id='cc_remainBar', cfg=getCfg(id); const latest=latestByCard();
+  const cards = filterCardsByCfg(state.cards, cfg);
+  const remItems=cards.map(c=>({label:c.name, value:Number(latest[c.id]?.amountDue)||0}));
+  const colors = (cfg.palette==='mono') ? remItems.map(_=> cfg.color||'#3b82f6') : cards.map(c=>c.color||'#3b82f6');
+  const chart = (cfg.chartType==='pie') ? pieChart(remItems,{colors})
+               : barChart(remItems,{colors,currency:true,yMin:cfg.yMin,yMax:cfg.yMax});
+  return [sectionTitle('Remaining Statement by Card (latest)'), chart];
+})()},
   cc_dueSoon:{label:'Due Soon Timeline', size:1, build:()=> DueSoonWidget()},
   cc_utilLadder:{label:'Utilization Order', size:1, build:()=> UtilLadderWidget()},
   cc_changedToday:{label:'What changed today?', size:1, build:()=> ChangedTodayWidget()},
@@ -744,9 +911,21 @@ function DueSoonWidget(){
   return [sectionTitle('Due Soon (progress to 30 days)'), barChart(items,{valueSuffix:' d',colors:state.cards.map(c=>c.color||'#3b82f6')})];
 }
 function UtilLadderWidget(){
+  const id='cc_utilLadder', cfg=getCfg(id);
   const latest=latestByCard();
-  const rows=state.cards.map(c=>{ const last=latest[c.id]; const util=(c.limit&&last?.totalBalance!=null)?(Number(last.totalBalance)/Number(c.limit)):0; return {name:c.name, util}; }).sort((a,b)=>b.util-a.util);
-  return [sectionTitle('Utilization Order'), h('table',{class:'table'}, h('thead',null,h('tr',null,h('th',null,'Card'),h('th',null,'Util'))), h('tbody',null, ...rows.map(r=> h('tr',null, h('td',null,r.name), h('td',null,(r.util*100).toFixed(1)+'%')))))];
+  let rows=state.cards.map(c=>{
+    const last=latest[c.id];
+    const util=(c.limit&&last?.totalBalance!=null)?(Number(last.totalBalance)/Number(c.limit)):0;
+    return {name:c.name, issuer:c.issuer, util};
+  });
+  const by = cfg.sort?.by || 'util'; const dir = cfg.sort?.dir || 'desc';
+  rows = sortBy(rows, by, dir);
+  const thead=h('thead',null,h('tr',null,
+    h('th',{onclick:()=>{ setCfg(id,{sort:{by:'name',dir: (by==='name'&&dir==='asc')?'desc':'asc'}}); render(); },style:'cursor:pointer;'}, 'Card'),
+    h('th',{onclick:()=>{ setCfg(id,{sort:{by:'util',dir: (by==='util'&&dir==='asc')?'desc':'asc'}}); render(); },style:'cursor:pointer;'}, 'Util')
+  ));
+  const tbody=h('tbody',null, ...rows.map(r=> h('tr',null, h('td',null,r.name), h('td',null,(r.util*100).toFixed(1)+'%'))));
+  return [sectionTitle('Utilization Order'), h('table',{class:'table'}, thead, tbody)];
 }
 function ChangedTodayWidget(){
   const today=todayISO(); const list=state.entries.filter(e=>e.date===today).sort((a,b)=>a.cardId.localeCompare(b.cardId));
@@ -776,10 +955,19 @@ function AgingBucketsWidget(){
   return [sectionTitle('Aging Buckets (count of cards by days-to-due)'), barChart(buckets.map(b=>({label:b.name, value:b.val})),{})];
 }
 function ExposureIssuerWidget(){
+  const id='cc_exposureIssuer', cfg=getCfg(id);
   const latest=latestByCard(); const map=new Map();
   state.cards.forEach(c=>{ const val=Number(latest[c.id]?.totalBalance)||0; map.set(c.issuer, (map.get(c.issuer)||0)+val); });
-  const items=Array.from(map.entries()).map(([label,value])=>({label,value}));
-  return [sectionTitle('Exposure by Issuer (total balance)'), barChart(items,{currency:true})];
+  let items=Array.from(map.entries()).map(([label,value])=>({label,value}));
+  const chart = (cfg.chartType==='pie') ? pieChart(items,{colors:items.map(_=>cfg.color||'#3b82f6')})
+               : barChart(items,{currency:true,yMin:cfg.yMin,yMax:cfg.yMax});
+  const by = cfg.sort?.by || 'value'; const dir = cfg.sort?.dir || 'desc';
+  items = sortBy(items, by, dir);
+  const table=h('table',{class:'table'}, h('thead',null,h('tr',null,
+    h('th',{onclick:()=>{ setCfg(id,{sort:{by:'label',dir:(by==='label'&&dir==='asc')?'desc':'asc'}}); render(); },style:'cursor:pointer;'},'Issuer'),
+    h('th',{onclick:()=>{ setCfg(id,{sort:{by:'value',dir:(by==='value'&&dir==='asc')?'desc':'asc'}}); render(); },style:'cursor:pointer;'},'Total')
+  )), h('tbody',null, ...items.map(r=>h('tr',null,h('td',null,r.label),h('td',null,fmtUSD(r.value))))));
+  return [sectionTitle('Exposure by Issuer (total balance)'), chart, table];
 }
 
 /* ----- Dashboards ----- */
@@ -959,4 +1147,4 @@ function render(){
 applyThemeTokens(); render();
 </script>
 </body>
-</html>
+}</html>
