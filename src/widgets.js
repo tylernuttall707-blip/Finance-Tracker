@@ -1,3 +1,5 @@
+import {h, $, $$, clamp, state, save, render, configureWidget} from './app.js';
+
 export function widget(id, content, size, heightMode){ const el=h('section',{class:'panel p4 drag',draggable:'true','data-widget-id':id, style:`grid-column: span ${Math.max(1,size||1)}`}, content);
   const hmode = heightMode || state.widgetHeightMode[id] || 'auto';
   let hpx = null; if (hmode==='short') hpx=240; else if(hmode==='medium') hpx=340; else if(hmode==='tall') hpx=440; else if(hmode==='fixed') hpx = clamp(Number(state.widgetFixedH[id]||320), 180, 900);
