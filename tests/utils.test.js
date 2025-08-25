@@ -8,6 +8,14 @@ describe('clampDay', () => {
   test('clamps values below 1 to 1', () => {
     expect(clampDay(0)).toBe(1);
   });
+
+  test('accepts numeric strings', () => {
+    expect(clampDay('31')).toBe(28);
+  });
+
+  test('handles decimal days', () => {
+    expect(clampDay(5.5)).toBe(5.5);
+  });
 });
 
 describe('nextMonthlyDateFrom', () => {
@@ -27,5 +35,27 @@ describe('nextMonthlyDateFrom', () => {
 
   test('handles invalid day by clamping to 28', () => {
     expect(nextMonthlyDateFrom(31, ref)).toBe('2024-05-28');
+  });
+
+  test('accepts day as a numeric string', () => {
+    expect(nextMonthlyDateFrom('11', ref)).toBe('2024-05-11');
+  });
+
+  test('floors decimal day values', () => {
+    expect(nextMonthlyDateFrom(27.8, ref)).toBe('2024-05-27');
+  });
+
+  test('clamps negative day values', () => {
+    expect(nextMonthlyDateFrom(-5, ref)).toBe('2024-05-01');
+  });
+
+  test('clamps null day values', () => {
+    expect(nextMonthlyDateFrom(null, ref)).toBe('2024-05-01');
+  });
+
+  test('falls back to current date when fromISO is invalid', () => {
+    jest.useFakeTimers().setSystemTime(new Date(ref));
+    expect(nextMonthlyDateFrom(12, 'not-a-date')).toBe('2024-05-12');
+    jest.useRealTimers();
   });
 });
