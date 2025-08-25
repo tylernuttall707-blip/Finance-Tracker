@@ -874,7 +874,8 @@ function ensureDashOrder(dash,key){
 function emptyNotice(){ return h('div',{class:'panel p4'}, h('div',{class:'muted'},'No widgets selected. Click "Customize" above to add widgets.')); }
 function buildGrid(orderKey, dash, gridId){
   ensureDashOrder(dash, orderKey);
-  const grid=h('div',{class:'grid grid-3',id:gridId});
+  const cols = clamp(state.ui.colCount?.[dash] || 3, 1, 6);
+  const grid=h('div',{class:'grid',id:gridId,style:{gridTemplateColumns:`repeat(${cols}, minmax(0,1fr))`}});
   const list=(state[orderKey]||[]);
   for(const id of list){
     const meta=(WidgetRegistry && WidgetRegistry[id])? WidgetRegistry[id] : null;
@@ -1038,6 +1039,21 @@ function settingsSection(){
           h('option',{value:'on', selected: state.ui.useGrouping!==false?'selected':null},'On'),
           h('option',{value:'off', selected: state.ui.useGrouping===false?'selected':null},'Off')
         )
+      ),
+      h('div',{class:'field'}, h('label',null,'Overview columns'),
+        h('input',{type:'number',min:'1',max:'6',
+          value:String(state.ui.colCount?.overview || 3),
+          oninput:e=>{ state.ui.colCount.overview = clamp(Number(e.target.value||3),1,6); save(); render(); }})
+      ),
+      h('div',{class:'field'}, h('label',null,'Credit columns'),
+        h('input',{type:'number',min:'1',max:'6',
+          value:String(state.ui.colCount?.credit || 3),
+          oninput:e=>{ state.ui.colCount.credit = clamp(Number(e.target.value||3),1,6); save(); render(); }})
+      ),
+      h('div',{class:'field'}, h('label',null,'Financials columns'),
+        h('input',{type:'number',min:'1',max:'6',
+          value:String(state.ui.colCount?.financials || 3),
+          oninput:e=>{ state.ui.colCount.financials = clamp(Number(e.target.value||3),1,6); save(); render(); }})
       )
     )
   );
