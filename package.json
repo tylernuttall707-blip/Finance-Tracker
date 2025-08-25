@@ -1,0 +1,16 @@
+{
+  "name": "finance-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "utils.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

@@ -95,6 +95,7 @@
 <body>
 <div class="app" id="app"><div id="boot">Loading app…</div></div>
 
+<script src="utils.js"></script>
 <script>
 /* ---------- Early widget registry (prevents undefined errors) ---------- */
 window.WidgetRegistry = window.WidgetRegistry || {}; // global
@@ -106,8 +107,6 @@ const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 const todayISO=()=>new Date().toISOString().slice(0,10);
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-const clampDay = (d) => Math.max(1, Math.min(28, Number(d)||1));
-const nextMonthlyDateFrom = (day, fromISO) => { const d=clampDay(day); const ref = fromISO ? new Date(fromISO) : new Date(); const y=ref.getFullYear(), m=ref.getMonth(); const cand=new Date(y,m,d); const ref0=new Date(ref.toDateString()); const out=(cand>=ref0?cand:new Date(y,m+1,d)); return out.toISOString().slice(0,10); };
 const daysBetween = (a,b) => { const A=new Date(a), B=new Date(b); A.setHours(0,0,0,0); B.setHours(0,0,0,0); return Math.round((B-A)/86400000) };
 const fmtUSD = (n) => (n==null || isNaN(n) ? '—' : Number(n).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}));
 const asNumber = (v) => {
