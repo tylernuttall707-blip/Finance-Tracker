@@ -54,10 +54,11 @@
   .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
   .p4{padding:14px}
   .grid{display:grid;gap:14px}
+  .grid-4{grid-template-columns: repeat(4,minmax(0,1fr))}
   .grid-3{grid-template-columns: var(--cols-3)}
   .grid-2{grid-template-columns: repeat(2,minmax(0,1fr))}
   .grid-1{grid-template-columns: 1fr}
-  @media (max-width:1100px){ .grid-3,.grid-2{grid-template-columns: 1fr} }
+  @media (max-width:1100px){ .grid-4,.grid-3,.grid-2{grid-template-columns: 1fr} }
   .kpi{border-radius:12px;padding:12px;border:1px solid var(--border);background:var(--panel)}
   .kpi .label{font-size:11px;color:var(--muted)}
   .kpi .value{font-size:20px;font-weight:700;margin-top:6px}
@@ -401,18 +402,19 @@ function percentInput(value,onChange,label){ const f=h('div',{class:'field'}, la
   h('div',{style:'position:relative;'},
     h('input',{type:'text',value:value==null?'':String(value),style:'padding-right:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');onChange(raw);},onblur:e=>{const n=Number(e.target.value);e.target.value=isFinite(n)?n.toFixed(2):'';onChange(e.target.value);}}),
     h('span',{style:'position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'%'))); return f; }
-function widget(id, content, size, heightMode){ const el=h('section',{class:'panel p4 drag',draggable:'true','data-widget-id':id, style:`grid-column: span ${Math.max(1,Math.min(3,size||1))}`}, content);
+function widget(id, content, size, heightMode, maxCols){ const span = Math.max(1, Math.min(maxCols||4, size||1)); const el=h('section',{class:'panel p4 drag',draggable:'true','data-widget-id':id, style:`grid-column: span ${span}`}, content);
   const hmode = heightMode || state.widgetHeightMode[id] || 'auto';
   let hpx = null; if (hmode==='short') hpx=240; else if(hmode==='medium') hpx=340; else if(hmode==='tall') hpx=440; else if(hmode==='fixed') hpx = clamp(Number(state.widgetFixedH[id]||320), 180, 900);
   if (hmode!=='auto'){ el.style.maxHeight = hpx+'px'; el.style.overflow='auto'; }
   return el;
 }
-function addWidgetControls(wrapper, id, orderKey){
+function addWidgetControls(wrapper, id, orderKey, dash){
   const size = state.widgetSize[id] || 1;
   const hmode = state.widgetHeightMode[id] || 'auto';
+  const maxCols = state.ui.colCount?.[dash] || 3;
   const row=h('div',{style:'display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;align-items:center;'},
     h('div',{class:'sizepick'},
-      ...[1,2,3].map(n=> h('button',{'aria-pressed': String(size===n), onclick:()=>{ state.widgetSize[id]=n; save(); wrapper.style.gridColumn='span '+n; }}, String(n)))
+      ...Array.from({length:maxCols},(_,i)=>{ const n=i+1; return h('button',{'aria-pressed': String(size===n), onclick:()=>{ state.widgetSize[id]=n; save(); wrapper.style.gridColumn='span '+Math.min(n,maxCols); }}, String(n)); })
     ),
     h('div',{class:'field',style:'width:160px;'}, h('label',null,'Height'),
       h('select',{onchange:e=>{ state.widgetHeightMode[id]=e.target.value; save(); render(); }},
@@ -551,17 +553,23 @@ function controlsRow(dash, orderKey){
 function customizeBar(dash, orderKey, gridId){
   const idsAvailable = availableForDashboard(dash);
   const idsSelected = (state[orderKey]||[]).filter(id=> idsAvailable.includes(id));
+  const colCount = clamp(state.ui.colCount?.[dash] || 3, 1, 4);
   const bar = h('div',{class:'customize-bar'},
     h('div',{style:'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;'},
       h('div',null, h('strong',null,'Customize: '), h('span',{class:'muted'}, dash.charAt(0).toUpperCase()+dash.slice(1))),
       h('div',{style:'display:flex;gap:8px;align-items:center;'},
-        h('div',null, h('div',{class:'muted'},'Center column weight'),
-          h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); applyThemeTokens(); }})
+        h('div',null, h('div',{class:'muted'},'Columns'),
+          h('select',{onchange:e=>{ state.ui.colCount[dash]=Number(e.target.value); save(); render(); }},
+            ...[1,2,3,4].map(n=> h('option',{value:String(n), selected: colCount===n?'selected':null}, String(n)))
+          )
         ),
+        colCount===3? h('div',null, h('div',{class:'muted'},'Center column weight'),
+          h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); applyThemeTokens(); }})
+        ) : null,
         h('button',{class:'btn tiny',onclick:()=>{ state[orderKey] = availableForDashboard(dash).slice(); save(); render(); showToast('Reset','Widget list restored for '+dash+'.'); }},'Reset')
       )
     ),
-    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;'}, 
+    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;'},
       ...idsAvailable.map(id=>{
         const chosen = idsSelected.includes(id);
         const label = (WidgetRegistry && WidgetRegistry[id] && WidgetRegistry[id].label) ? WidgetRegistry[id].label : id;
@@ -1039,14 +1047,15 @@ function ensureDashOrder(dash,key){
 function emptyNotice(){ return h('div',{class:'panel p4'}, h('div',{class:'muted'},'No widgets selected. Click "Customize" above to add widgets.')); }
 function buildGrid(orderKey, dash, gridId){
   ensureDashOrder(dash, orderKey);
-  const grid=h('div',{class:'grid grid-3',id:gridId});
+  const cols = clamp(state.ui.colCount?.[dash] || 3, 1, 4);
+  const grid=h('div',{class:'grid grid-'+cols,id:gridId});
   const list=(state[orderKey]||[]);
   for(const id of list){
     const meta=(WidgetRegistry && WidgetRegistry[id])? WidgetRegistry[id] : null;
     if(!meta) continue;
     const built = meta.build();
-    const el = widget(id, built, state.widgetSize[id]||meta.size||1, state.widgetHeightMode[id]||'auto');
-    if (state.ui.customizing===dash) addWidgetControls(el, id, orderKey);
+    const el = widget(id, built, state.widgetSize[id]||meta.size||1, state.widgetHeightMode[id]||'auto', cols);
+    if (state.ui.customizing===dash) addWidgetControls(el, id, orderKey, dash);
     grid.appendChild(el);
   }
   if(!grid.children.length) grid.appendChild(emptyNotice());
