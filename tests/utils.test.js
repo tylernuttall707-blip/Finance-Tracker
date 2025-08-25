@@ -28,4 +28,8 @@ describe('nextMonthlyDateFrom', () => {
   test('handles invalid day by clamping to 28', () => {
     expect(nextMonthlyDateFrom(31, ref)).toBe('2024-05-28');
   });
+
+  test('throws an error for invalid fromISO string', () => {
+    expect(() => nextMonthlyDateFrom(10, 'not-a-date')).toThrow('Invalid date string');
+  });
 });
