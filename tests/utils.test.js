@@ -1,4 +1,4 @@
-const { nextMonthlyDateFrom, clampDay } = require('../utils');
+import { nextMonthlyDateFrom, clampDay } from '../src/utils.js';
 
 describe('clampDay', () => {
   test('clamps values above 28 to 28', () => {

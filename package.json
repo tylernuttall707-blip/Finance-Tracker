@@ -2,7 +2,7 @@
   "name": "finance-tracker",
   "version": "1.0.0",
   "description": "",
-  "main": "utils.js",
+  "main": "src/utils.js",
   "directories": {
     "test": "tests"
   },
@@ -12,5 +12,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "module"
 }
