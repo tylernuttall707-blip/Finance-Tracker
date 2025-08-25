@@ -7,9 +7,18 @@ export function widget(id, content, size, heightMode){ const el=h('section',{cla
 export function addWidgetControls(wrapper, id, orderKey){
   const size = state.widgetSize[id] || 1;
   const hmode = state.widgetHeightMode[id] || 'auto';
+  const dashMap = {order_overview:'overview', order_cc:'credit', order_fin:'financials'};
+  const dash = dashMap[orderKey] || 'overview';
+  const colCount = state.ui?.colCount?.[dash] || 3;
+  const col = Math.max(1, Math.min(colCount, state.widgetCol[id] || 1));
   const row=h('div',{style:'display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;align-items:center;'},
     h('div',{class:'sizepick'},
       ...[1,2,3].map(n=> h('button',{'aria-pressed': String(size===n), onclick:()=>{ state.widgetSize[id]=n; save(); wrapper.style.gridColumn='span '+n; }}, String(n)))
+    ),
+    h('div',{class:'field',style:'width:80px;'}, h('label',null,'Column'),
+      h('select',{onchange:e=>{ state.widgetCol[id]=Number(e.target.value); save(); render(); }},
+        ...Array.from({length:colCount},(_,i)=> h('option',{value:String(i+1), selected: col===i+1?'selected':null}, String(i+1)))
+      )
     ),
     h('div',{class:'field',style:'width:160px;'}, h('label',null,'Height'),
       h('select',{onchange:e=>{ state.widgetHeightMode[id]=e.target.value; save(); render(); }},
@@ -24,15 +33,23 @@ export function addWidgetControls(wrapper, id, orderKey){
   );
   wrapper.prepend(row);
 }
-export function enableDrag(container, orderKey){
+export function enableDrag(container, orderKey, root=container){
   const grid = typeof container==='string'? document.getElementById(container) : container;
-  if (!grid) return;
+  const rootEl = typeof root==='string'? document.getElementById(root) : root;
+  if (!grid || !rootEl) return;
   let dragging=null, placeholder=null;
   function onDragStart(e){ const el=e.currentTarget; dragging=el; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; placeholder=document.createElement('div'); placeholder.className='placeholder'; placeholder.style.gridColumn=el.style.gridColumn||'span 1'; el.after(placeholder); }
   function onDragOver(e){ e.preventDefault(); const target=e.target.closest('[data-widget-id]'); if(!target || target===dragging || !grid.contains(target)) return; const rect=target.getBoundingClientRect(); const before = (e.clientY-rect.top) < rect.height/2; before ? grid.insertBefore(placeholder, target) : grid.insertBefore(placeholder, target.nextSibling); }
   function onDrop(e){ e.preventDefault(); if(!placeholder||!dragging) return; placeholder.replaceWith(dragging); dragging.classList.remove('dragging'); dragging=null; placeholder=null; persist(); }
   function onDragEnd(){ if(placeholder && dragging){ placeholder.replaceWith(dragging); } dragging?.classList.remove('dragging'); dragging=null; placeholder=null; persist(); }
-  function persist(){ const ids=$$('#'+grid.id+' > [data-widget-id]').map(x=>x.getAttribute('data-widget-id')); state[orderKey]=ids; save(); }
+  function persist(){
+    const ids=[];
+    Array.from(rootEl.querySelectorAll('.column-grid')).forEach(col=>{
+      Array.from(col.querySelectorAll('[data-widget-id]')).forEach(el=> ids.push(el.getAttribute('data-widget-id')));
+    });
+    state[orderKey]=ids;
+    save();
+  }
   $$('#'+grid.id+' > [data-widget-id]').forEach(el=>{
     el.addEventListener('dragstart', onDragStart); el.addEventListener('dragover', onDragOver); el.addEventListener('drop', onDrop); el.addEventListener('dragend', onDragEnd);
   });

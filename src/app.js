@@ -874,7 +874,10 @@ function ensureDashOrder(dash,key){
 function emptyNotice(){ return h('div',{class:'panel p4'}, h('div',{class:'muted'},'No widgets selected. Click "Customize" above to add widgets.')); }
 function buildGrid(orderKey, dash, gridId){
   ensureDashOrder(dash, orderKey);
-  const grid=h('div',{class:'grid grid-3',id:gridId});
+  const colCount = state.ui?.colCount?.[dash] || 3;
+  const grid=h('div',{class:'grid grid-'+colCount,id:gridId});
+  const cols = Array.from({length:colCount},(_,i)=> h('div',{class:'grid column-grid',style:'display:flex;flex-direction:column'},[]));
+  cols.forEach(c=>grid.appendChild(c));
   const list=(state[orderKey]||[]);
   for(const id of list){
     const meta=(WidgetRegistry && WidgetRegistry[id])? WidgetRegistry[id] : null;
@@ -882,10 +885,15 @@ function buildGrid(orderKey, dash, gridId){
     const built = meta.build();
     const el = widget(id, built, state.widgetSize[id]||meta.size||1, state.widgetHeightMode[id]||'auto');
     if (state.ui.customizing===dash) addWidgetControls(el, id, orderKey);
-    grid.appendChild(el);
+    const colIdx = Math.max(1, Math.min(colCount, state.widgetCol[id]||1)) - 1;
+    cols[colIdx].appendChild(el);
   }
-  if(!grid.children.length) grid.appendChild(emptyNotice());
-  setTimeout(()=> enableDrag(grid, orderKey), 0);
+  if(!list.length){
+    grid.innerHTML='';
+    grid.appendChild(emptyNotice());
+  }else{
+    setTimeout(()=> cols.forEach(c=> enableDrag(c, orderKey, grid)), 0);
+  }
   return grid;
 }
 function overview(){
