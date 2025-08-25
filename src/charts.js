@@ -1,3 +1,5 @@
+import {h} from './app.js';
+
 export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
   const W=720,H=200,P=28,G=12,N=items.length,BAR=(W-P*2-(N-1)*G)/Math.max(1,N);

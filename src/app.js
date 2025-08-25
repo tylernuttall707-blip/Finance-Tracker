@@ -6,20 +6,20 @@ window.WidgetRegistry = window.WidgetRegistry || {}; // global
 const WidgetRegistry = window.WidgetRegistry;
 
 /* ---------- Utilities ---------- */
-const $ = (s,el=document)=>el.querySelector(s);
-const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
-const uid=()=>globalThis.crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36);
-const todayISO=()=>new Date().toISOString().slice(0,10);
-const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-const daysBetween = (a,b) => { const A=new Date(a), B=new Date(b); A.setHours(0,0,0,0); B.setHours(0,0,0,0); return Math.round((B-A)/86400000) };
-const fmtUSD = (n) => (n==null || isNaN(n) ? '—' : Number(n).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}));
-const asNumber = (v) => {
+export const $ = (s,el=document)=>el.querySelector(s);
+export const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
+export const uid=()=>globalThis.crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36);
+export const todayISO=()=>new Date().toISOString().slice(0,10);
+export const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+export const daysBetween = (a,b) => { const A=new Date(a), B=new Date(b); A.setHours(0,0,0,0); B.setHours(0,0,0,0); return Math.round((B-A)/86400000) };
+export const fmtUSD = (n) => (n==null || isNaN(n) ? '—' : Number(n).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}));
+export const asNumber = (v) => {
   if (v === '' || v == null) return null;
   const n = Number(String(v).replace(/,/g,''));
   return isNaN(n) ? null : n;
 };
-const hexToRgb = (hex) => { const m = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex||'#3b82f6'); return m?{r:parseInt(m[1],16),g:parseInt(m[2],16),b:parseInt(m[3],16)}:{r:59,g:130,b:246}; };
-function h(tag, attrs={}, ...children){
+export const hexToRgb = (hex) => { const m = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex||'#3b82f6'); return m?{r:parseInt(m[1],16),g:parseInt(m[2],16),b:parseInt(m[3],16)}:{r:59,g:130,b:246}; };
+export function h(tag, attrs={}, ...children){
   const el=document.createElement(tag);
   for(const [k,v] of Object.entries(attrs||{})){
     if(k==='class') el.className=v;
@@ -86,7 +86,7 @@ function applyThemeTokens(){
 
 /* ---------- Storage & State ---------- */
 const STORAGE_KEY='cc-finance-tracker-v27'; /* keep your data */
-let state = load() || seed();
+export let state = load() || seed();
 function seed(){
   const c1={id:uid(),name:'Company Visa (Chase)',issuer:'Chase',limit:25000,apr:18.99,fixedDueDay:12,fixedCloseDay:15,color:'#3b82f6',utilTarget:30,useGradient:true};
   const a1={id:uid(),name:'Operating Checking',bank:'',number:'...1234',type:'bank',color:'#0ea5e9'};
@@ -145,7 +145,7 @@ function load(){
   }
 }
 
-function save(){
+export function save(){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
@@ -287,7 +287,7 @@ function showModal(title, contentBuilder, onSave){
   contentBuilder(body);
   return scrim;
 }
-function configureWidget(id){
+export function configureWidget(id){
   const cfg = Object.assign({}, getCfg(id));
   showModal('Configure widget', (wrap)=>{
     wrap.appendChild(h('div',{class:'grid grid-2'},
