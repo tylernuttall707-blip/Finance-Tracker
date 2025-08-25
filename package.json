@@ -1,16 +1,21 @@
 {
   "name": "finance-tracker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Track income, expenses, and credit card balances to stay on budget",
   "main": "utils.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
+    "start": "node utils.js",
     "test": "jest"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/example/finance-tracker.git"
+  },
+  "keywords": ["finance", "tracker", "budget", "expenses", "credit-card"],
+  "author": "Finance Tracker Team",
   "license": "ISC",
   "type": "commonjs"
 }
