@@ -1,5 +1,8 @@
+function clamp(n, min, max){
+  return Math.max(min, Math.min(max, n));
+}
 function clampDay(d){
-  return Math.max(1, Math.min(28, Number(d) || 1));
+  return clamp(Number(d) || 1, 1, 28);
 }
 function nextMonthlyDateFrom(day, fromISO){
   const d = clampDay(day);
@@ -12,9 +15,10 @@ function nextMonthlyDateFrom(day, fromISO){
   return out.toISOString().slice(0, 10);
 }
 if (typeof module !== 'undefined'){
-  module.exports = {clampDay, nextMonthlyDateFrom};
+  module.exports = {clamp, clampDay, nextMonthlyDateFrom};
 }
 if (typeof window !== 'undefined'){
+  window.clamp = clamp;
   window.clampDay = clampDay;
   window.nextMonthlyDateFrom = nextMonthlyDateFrom;
 }
