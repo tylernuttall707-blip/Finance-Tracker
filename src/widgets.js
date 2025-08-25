@@ -1,4 +1,4 @@
-export function widget(id, content, size, heightMode){ const el=h('section',{class:'panel p4 drag',draggable:'true','data-widget-id':id, style:`grid-column: span ${Math.max(1,Math.min(3,size||1))}`}, content);
+export function widget(id, content, size, heightMode){ const el=h('section',{class:'panel p4 drag',draggable:'true','data-widget-id':id, style:`grid-column: span ${Math.max(1,size||1)}`}, content);
   const hmode = heightMode || state.widgetHeightMode[id] || 'auto';
   let hpx = null; if (hmode==='short') hpx=240; else if(hmode==='medium') hpx=340; else if(hmode==='tall') hpx=440; else if(hmode==='fixed') hpx = clamp(Number(state.widgetFixedH[id]||320), 180, 900);
   if (hmode!=='auto'){ el.style.maxHeight = hpx+'px'; el.style.overflow='auto'; }
@@ -9,7 +9,7 @@ export function addWidgetControls(wrapper, id, orderKey){
   const hmode = state.widgetHeightMode[id] || 'auto';
   const row=h('div',{style:'display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;align-items:center;'},
     h('div',{class:'sizepick'},
-      ...[1,2,3].map(n=> h('button',{'aria-pressed': String(size===n), onclick:()=>{ state.widgetSize[id]=n; save(); wrapper.style.gridColumn='span '+n; }}, String(n)))
+      ...[1,2,3,4,5,6].map(n=> h('button',{'aria-pressed': String(size===n), onclick:()=>{ state.widgetSize[id]=n; save(); wrapper.style.gridColumn='span '+n; }}, String(n)))
     ),
     h('div',{class:'field',style:'width:160px;'}, h('label',null,'Height'),
       h('select',{onchange:e=>{ state.widgetHeightMode[id]=e.target.value; save(); render(); }},
