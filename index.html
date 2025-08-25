@@ -558,7 +558,8 @@ function customizeBar(dash, orderKey, gridId){
         h('div',null, h('div',{class:'muted'},'Center column weight'),
           h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); applyThemeTokens(); }})
         ),
-        h('button',{class:'btn tiny',onclick:()=>{ state[orderKey] = availableForDashboard(dash).slice(); save(); render(); showToast('Reset','Widget list restored for '+dash+'.'); }},'Reset')
+        h('button',{class:'btn tiny',onclick:()=>{ state[orderKey] = availableForDashboard(dash).slice(); save(); render(); showToast('Reset','Widget list restored for '+dash+'.'); }},'Reset'),
+        h('button',{class:'btn tiny',onclick:()=>{ state.ui.customizing=null; save(); render(); }},'Done')
       )
     ),
     h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;'}, 
