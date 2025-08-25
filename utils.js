@@ -3,7 +3,10 @@ function clampDay(d){
 }
 function nextMonthlyDateFrom(day, fromISO){
   const d = clampDay(day);
-  const ref = fromISO ? new Date(fromISO) : new Date();
+  let ref = fromISO ? new Date(fromISO) : new Date();
+  if (fromISO && isNaN(ref.getTime())){
+    throw new Error(`Invalid date string: ${fromISO}`);
+  }
   const y = ref.getFullYear();
   const m = ref.getMonth();
   const cand = new Date(y, m, d);
