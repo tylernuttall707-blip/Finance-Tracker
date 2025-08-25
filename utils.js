@@ -30,15 +30,23 @@ function clampDay(d){
  */
 function nextMonthlyDateFrom(day, fromISO){
   const d = clampDay(day);
-  let ref = fromISO ? new Date(fromISO) : new Date();
-  if (fromISO && isNaN(ref.getTime())){
-    throw new Error(`Invalid date string: ${fromISO}`);
+  let ref;
+  if (fromISO){
+    // Parse bare YYYY-MM-DD strings as UTC to avoid timezone shifts.
+    ref = new Date(/^\d{4}-\d{2}-\d{2}$/.test(fromISO)
+      ? `${fromISO}T00:00:00Z`
+      : fromISO);
+    if (isNaN(ref.getTime())){
+      throw new Error(`Invalid date string: ${fromISO}`);
+    }
+  } else {
+    ref = new Date();
   }
-  const y = ref.getFullYear();
-  const m = ref.getMonth();
-  const cand = new Date(y, m, d);
-  const ref0 = new Date(ref.toDateString());
-  const out = (cand >= ref0 ? cand : new Date(y, m + 1, d));
+  const y = ref.getUTCFullYear();
+  const m = ref.getUTCMonth();
+  const cand = new Date(Date.UTC(y, m, d));
+  const ref0 = new Date(Date.UTC(y, m, ref.getUTCDate()));
+  const out = (cand >= ref0 ? cand : new Date(Date.UTC(y, m + 1, d)));
   // toISOString().slice(0, 10) returns a YYYY-MM-DD string.
   return out.toISOString().slice(0, 10);
 }
