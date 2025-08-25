@@ -33,3 +33,24 @@ describe('nextMonthlyDateFrom', () => {
     expect(() => nextMonthlyDateFrom(10, 'not-a-date')).toThrow('Invalid date string');
   });
 });
+
+describe('timezone handling', () => {
+  const ref = '2024-05-10';
+  const originalTZ = process.env.TZ;
+
+  afterEach(() => {
+    process.env.TZ = originalTZ;
+  });
+
+  test('works in a timezone west of UTC', () => {
+    process.env.TZ = 'America/Los_Angeles';
+    expect(nextMonthlyDateFrom(10, ref)).toBe('2024-05-10');
+    expect(nextMonthlyDateFrom(9, ref)).toBe('2024-06-09');
+  });
+
+  test('works in a timezone east of UTC', () => {
+    process.env.TZ = 'Asia/Tokyo';
+    expect(nextMonthlyDateFrom(10, ref)).toBe('2024-05-10');
+    expect(nextMonthlyDateFrom(9, ref)).toBe('2024-06-09');
+  });
+});
