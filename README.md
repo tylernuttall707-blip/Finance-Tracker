@@ -22,6 +22,14 @@ npm start
 
 or open `index.html` directly in your browser for a static preview.
 
+To build a production bundle (useful for GitHub Pages deployments), run:
+
+```bash
+npm run build
+```
+
+The compiled assets will be output to the `dist/` folder.
+
 ## Tests
 
 ```bash
@@ -57,4 +65,5 @@ under the key `cc-finance-tracker-v27`. Clearing your browser data will reset th
 
 A GitHub Pages deployment is available for an immediate preview:
 
-[Finance Tracker Demo](https://example.github.io/finance-tracker/)
+1. Enable GitHub Pages in your repository settings and point it to the `dist/` directory after running the build command above.
+2. Visit `https://<your-user>.github.io/Finance-Tracker/` to view the site once the deployment finishes.
