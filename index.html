@@ -241,6 +241,14 @@ function load(){
   }
 }
 
+function save(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save state', e);
+  }
+}
+
 /* ---------- Derived / KPIs with caching ---------- */
 const cache={vers:{cards:0,entries:0,finAccounts:0,finEntries:0}, latestByCard:null, kpisCC:null, sTotal:null,sAvail:null,sRemain:null, finLatest:null,finKPIs:null};
 function bump(k){ cache.vers[k]=(cache.vers[k]||0)+1; }
