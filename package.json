@@ -8,14 +8,25 @@
   },
   "scripts": {
     "start": "node utils.js",
-    "test": "jest"
+    "test": "jest",
+    "dev": "vite",
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/example/finance-tracker.git"
   },
-  "keywords": ["finance", "tracker", "budget", "expenses", "credit-card"],
+  "keywords": [
+    "finance",
+    "tracker",
+    "budget",
+    "expenses",
+    "credit-card"
+  ],
   "author": "Finance Tracker Team",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
 }
