@@ -434,7 +434,7 @@ function fieldBlock(label, value, highlight=false){ return h('div',null, h('div'
 function ccCardsGridWidget(){
   const latest=latestByCard();
   return [sectionTitle('Cards Overview'),
-    h('div',{class:'grid grid-2'}, ...state.cards.map(card=>{
+    h('div',{class:'grid',style:`grid-template-columns:repeat(${clamp(state.ui.ccCardsCols??2,1,4)},minmax(0,1fr))`}, ...state.cards.map(card=>{
       const last=latest[card.id]||{};
       const util=(card.limit && last?.totalBalance!=null)?(Number(last.totalBalance)/Number(card.limit)):null;
       const daysTilDue=last?.dueDate?daysBetween(todayISO(), last.dueDate):null;
@@ -1020,6 +1020,18 @@ function settingsSection(){
     )
   );
 
+  const dashPanel=h('div',{class:'panel p4'},
+    sectionTitle('Dashboard Settings'),
+    h('div',{class:'grid grid-2'},
+      h('div',{class:'field'}, h('label',null,'Cards overview columns'),
+        h('input',{type:'range',min:'1',max:'4',step:'1',
+          value:String(clamp(state.ui.ccCardsCols??2,1,4)),
+          oninput:e=>{ state.ui.ccCardsCols=clamp(Number(e.target.value||2),1,4); save(); render(); }
+        })
+      )
+    )
+  );
+
   const uxPanel=h('div',{class:'panel p4'},
     sectionTitle('UX Preferences'),
     h('div',{class:'grid grid-2'},
@@ -1060,6 +1072,7 @@ function settingsSection(){
 
   wrap.appendChild(themePanel);
   wrap.appendChild(orgPanel);
+  wrap.appendChild(dashPanel);
   wrap.appendChild(uxPanel);
   return wrap;
 }
