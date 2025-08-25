@@ -80,7 +80,7 @@
   .cal .cell{min-height:84px;border:1px solid var(--border);border-radius:12px;padding:6px;overflow:hidden;background:var(--panel)}
   .cal .dow{text-align:center;color:var(--muted);font-size:11px}
   .dot{width:8px;height:8px;border-radius:9999px;display:inline-block;margin-right:4px}
-  .customise-bar{position:sticky;top:12px;z-index:5;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+  .customize-bar{position:sticky;top:12px;z-index:5;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
   .chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);color:var(--text);padding:6px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
   .sizepick{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
   .sizepick button{padding:4px 8px;background:transparent;border:0;cursor:pointer;font-size:12px}
@@ -543,7 +543,7 @@ function controlsRow(dash, orderKey){
 function customizeBar(dash, orderKey, gridId){
   const idsAvailable = availableForDashboard(dash);
   const idsSelected = (state[orderKey]||[]).filter(id=> idsAvailable.includes(id));
-  const bar = h('div',{class:'customise-bar'},
+  const bar = h('div',{class:'customize-bar'},
     h('div',{style:'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;'},
       h('div',null, h('strong',null,'Customize: '), h('span',{class:'muted'}, dash.charAt(0).toUpperCase()+dash.slice(1))),
       h('div',{style:'display:flex;gap:8px;align-items:center;'},
