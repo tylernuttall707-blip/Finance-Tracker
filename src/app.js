@@ -119,6 +119,7 @@ function load(){
     obj.ui.colCount = obj.ui.colCount || { overview:3, credit:3, financials:3 };
     if (obj.ui.ccCardsCols == null) obj.ui.ccCardsCols = 2;
     obj.cardOrder = obj.cardOrder || [];
+    delete obj.widgetCol; // migrate: remove legacy column tracking
 
     return obj;
   }catch{
