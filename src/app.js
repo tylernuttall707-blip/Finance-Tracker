@@ -387,11 +387,11 @@ function appSidebar(){
   );
   const arrow = collapsed ? chevronRight() : chevronLeft();
   const logoNode = state.logoData ? h('img',{src:state.logoData,alt:'Logo'}) : defaultLogoSvg();
-  return h('aside',{class:'sidebar'},
+  return h('aside',{class:'sidebar'+(collapsed?' collapsed':''), 'aria-expanded': String(!collapsed)},
     h('div',{class:'brand'},
       h('div',{class:'logo'}, logoNode),
       collapsed? null : h('div',{class:'title'}, state.company || 'Company Finance'),
-      h('button',{class:'collapse-btn',title: collapsed?'Expand sidebar':'Collapse sidebar', onclick:(e)=>{ e.stopPropagation(); state.ui.sidebarCollapsed=!collapsed; save(); render(); }}, arrow)
+      h('button',{class:'collapse-btn',title: collapsed?'Expand sidebar':'Collapse sidebar', 'aria-expanded': String(!collapsed), onclick:(e)=>{ e.stopPropagation(); state.ui.sidebarCollapsed=!collapsed; save(); render(); }}, arrow)
     ),
     h('nav',{class:'nav'},
       item('overview','🏠','Overview'),
@@ -1163,7 +1163,7 @@ export function render(){
   applyThemeTokens();
   const root=$('#app'); root.innerHTML='';
   const collapsed = !!state.ui.sidebarCollapsed;
-  const layout=h('div',{class:'layout', style:`grid-template-columns:${collapsed? 'var(--sidebar-w-collapsed)':'var(--sidebar-w)'} 1fr`});
+  const layout=h('div',{class:'layout'+(collapsed?' collapsed':'')});
   layout.appendChild(appSidebar());
   const main=h('div',{class:'main'});
   main.appendChild(appHeader());

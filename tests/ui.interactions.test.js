@@ -16,13 +16,16 @@ function createStyle(){
   });
 }
 class Element {
-  constructor(tag){ this.tagName=tag; this.children=[]; this.attributes={}; this.style=createStyle(); this.eventListeners={}; this.parentNode=null; this.className=''; }
+  constructor(tag){ this.tagName=tag; this.children=[]; this.attributes={}; this.style=createStyle(); this.eventListeners={}; this.parentNode=null; this.className=''; this._innerHTML=''; }
   setAttribute(k,v){ this.attributes[k]=String(v); if(k==='class') this.className=String(v); }
   appendChild(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.push(child); return child; }
   prepend(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.unshift(child); return child; }
   addEventListener(type,handler){ (this.eventListeners[type]=this.eventListeners[type]||[]).push(handler); }
   dispatchEvent(evt){ evt.target=this; (this.eventListeners[evt.type]||[]).forEach(fn=>fn(evt)); }
   remove(){ if(this.parentNode){ const i=this.parentNode.children.indexOf(this); if(i>=0) this.parentNode.children.splice(i,1); }}
+  querySelector(sel){ if(sel.startsWith('#')) return findById(this, sel.slice(1)); return null; }
+  set innerHTML(v){ this.children=[]; this._innerHTML=String(v); }
+  get innerHTML(){ return this._innerHTML; }
   get firstChild(){ return this.children[0] || null; }
   get lastChild(){ return this.children[this.children.length-1] || null; }
   get textContent(){ return this.children.map(c=>c.nodeType===3?c.textContent:c.textContent).join(''); }
@@ -31,7 +34,9 @@ class Document {
   constructor(){ this.documentElement=new Element('html'); this.body=new Element('body'); this.documentElement.appendChild(this.body); }
   createElement(tag){ return new Element(tag); }
   createTextNode(text){ return new TextNode(text); }
+  querySelector(sel){ if(sel.startsWith('#')) return findById(this.documentElement, sel.slice(1)); return null; }
 }
+function findById(node, id){ if(node.attributes && node.attributes.id===id) return node; for(const child of node.children||[]){ const found=findById(child,id); if(found) return found; } return null; }
 const document = new Document();
 const window = { document, addEventListener: () => {}, removeEventListener: () => {} };
 const localStorage = { store:{}, setItem(k,v){this.store[k]=String(v);}, getItem(k){return this.store[k]??null;} };
@@ -39,6 +44,8 @@ const localStorage = { store:{}, setItem(k,v){this.store[k]=String(v);}, getItem
 global.window=window;
 global.document=document;
 global.localStorage=localStorage;
+global.setTimeout=()=>0;
+global.clearTimeout=()=>{};
 
 global.crypto = require('crypto').webcrypto;
 
@@ -62,7 +69,7 @@ function loadModule(relPath){
     if(p.startsWith('.')||p.startsWith('/')) return loadModule(path.resolve(dirname,p));
     return require(p);
   }
-  const context = {require:localRequire,module,exports:module.exports,__dirname:dirname,__filename:absPath,window,document,localStorage,console,crypto};
+  const context = {require:localRequire,module,exports:module.exports,__dirname:dirname,__filename:absPath,window,document,localStorage,console,crypto,setTimeout,clearTimeout};
   vm.runInNewContext(finalCode, context);
   cache.set(absPath,module.exports);
   return module.exports;
@@ -107,5 +114,28 @@ describe('addWidgetControls', () => {
     removeBtn.dispatchEvent({type:'click'});
     expect(state.order).toEqual([]);
     expect(render).toHaveBeenCalled();
+  });
+});
+
+describe('sidebar collapse toggle', () => {
+  test('sets aria-expanded and toggles class', () => {
+    const {state, render} = loadModule('src/app.js');
+    const app = document.createElement('div');
+    app.setAttribute('id', 'app');
+    document.body.appendChild(app);
+    state.ui.sidebarCollapsed = false;
+    render();
+    let layout = app.firstChild;
+    let sidebar = layout.firstChild;
+    let brand = sidebar.firstChild;
+    let btn = brand.children[2];
+    expect(btn.attributes['aria-expanded']).toBe('true');
+    btn.dispatchEvent({type:'click', stopPropagation:()=>{}});
+    layout = app.firstChild;
+    sidebar = layout.firstChild;
+    brand = sidebar.firstChild;
+    btn = brand.children[1];
+    expect(sidebar.className).toContain('collapsed');
+    expect(btn.attributes['aria-expanded']).toBe('false');
   });
 });
