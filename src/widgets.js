@@ -22,8 +22,6 @@ export function widget(id, content, size, heightMode, {state}) {
 export function addWidgetControls(wrapper, id, orderKey, dash, {state, save, render, configureWidget}) {
   const size = state.widgetSize[id] || 1;
   const hmode = state.widgetHeightMode[id] || 'auto';
-  const cols = clamp(state.ui.colCount?.[dash] || 3, 1, 6);
-  const curCol = clamp(state.widgetCol[id] || 1, 1, cols);
   const row = h('div', { style: 'display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;align-items:center;' },
     h('div', { class: 'sizepick' },
       ...[1, 2, 3, 4, 5, 6].map(n => h('button', { 'aria-pressed': String(size === n), onclick: () => { state.widgetSize[id] = n; save(); wrapper.style.gridColumn = 'span ' + n; } }, String(n)))
@@ -35,11 +33,6 @@ export function addWidgetControls(wrapper, id, orderKey, dash, {state, save, ren
     ),
     h('div', { class: 'field', style: 'width:110px;' + (hmode === 'fixed' ? '' : 'display:none;') }, h('label', null, 'Pixels'),
       h('input', { type: 'number', value: String(state.widgetFixedH[id] || 320), oninput: e => { state.widgetFixedH[id] = e.target.value; save(); render(); } })
-    ),
-    h('div', { class: 'field', style: 'width:90px;' }, h('label', null, 'Column'),
-      h('select', { onchange: e => { state.widgetCol[id] = Number(e.target.value); save(); render(); } },
-        ...Array.from({length: cols}, (_,i)=> h('option',{ value:String(i+1), selected: curCol===i+1?'selected':null }, String(i+1)))
-      )
     ),
     h('button', { class: 'btn tiny', onclick: () => configureWidget(id) }, 'Configure'),
     h('button', { class: 'btn tiny', onclick: () => { state[orderKey] = state[orderKey].filter(x => x !== id); save(); render(); } }, 'Remove')
@@ -68,8 +61,6 @@ export function enableDrag(container, orderKey, {state, save}) {
     const ids = [];
     grid.querySelectorAll('[data-widget-id]').forEach(el => {
       ids.push(el.getAttribute('data-widget-id'));
-      const col = Number(el.parentElement.getAttribute('data-col') || 1);
-      state.widgetCol[el.getAttribute('data-widget-id')] = col;
     });
     state[orderKey] = ids;
     save();

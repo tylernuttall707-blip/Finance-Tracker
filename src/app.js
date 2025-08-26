@@ -96,7 +96,6 @@ function seed(){
    widgetSize:{}, widgetHeightMode:{}, widgetFixedH:{},
    // NEW:
    widgetCfg:{},
-   widgetCol:{},            // widgetId -> column index (1..N)
    cardOrder:[]            // array of card ids for Cards Overview ordering
  };
 }
@@ -119,8 +118,8 @@ function load(){
     // ⬇️ ADD THESE DEFAULTS
     obj.ui.colCount = obj.ui.colCount || { overview:3, credit:3, financials:3 };
     if (obj.ui.ccCardsCols == null) obj.ui.ccCardsCols = 2;
-    obj.widgetCol = obj.widgetCol || {};
     obj.cardOrder = obj.cardOrder || [];
+    delete obj.widgetCol; // migrate: remove legacy column tracking
 
     return obj;
   }catch{
@@ -854,17 +853,14 @@ function buildGrid(orderKey, dash, gridId){
     grid.appendChild(emptyNotice());
     return grid;
   }
-  const colEls = Array.from({length:cols}, (_,i)=>h('div',{class:'grid','data-col':String(i+1)}));
   for(const id of list){
     const meta=(WidgetRegistry && WidgetRegistry[id])? WidgetRegistry[id] : null;
     if(!meta) continue;
     const built = meta.build();
-    const col = clamp(state.widgetCol[id] || 1, 1, cols);
     const el = widget(id, built, state.widgetSize[id]||meta.size||1, state.widgetHeightMode[id]||'auto', {state});
     if (state.ui.customizing===dash) addWidgetControls(el, id, orderKey, dash, {state, save, render, configureWidget});
-    colEls[col-1].appendChild(el);
+    grid.appendChild(el);
   }
-  colEls.forEach(c=>grid.appendChild(c));
   setTimeout(()=> enableDrag(grid, orderKey, {state, save}), 0);
   return grid;
 }
