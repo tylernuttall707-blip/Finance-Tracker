@@ -33,12 +33,56 @@ window.addEventListener('unhandledrejection', e=>{ console.error(e.reason); show
 /* ---------- Theme presets ---------- */
 const ThemePresets = {
   light: {
-    cloud:     { bg:'#F7F8FB', panel:'#FFFFFF', panel2:'#F3F5F9', border:'#E3E8EF', text:'#0B1220', muted:'#5B6474', muted2:'#7A8596', accent:'#2B73F7', ring:'#9BB8FF', shadow:'0 1px 2px rgba(16,24,40,.06), 0 6px 20px rgba(16,24,40,.06)' },
-    cloudContrast: { bg:'#EEF2F7', panel:'#FFFFFF', panel2:'#EEF1F6', border:'#D9E0EA', text:'#0A0F1A', muted:'#4D5461', muted2:'#6B7280', accent:'#2C6BED', ring:'#A7BDFE', shadow:'0 1px 2px rgba(10,15,26,.07), 0 8px 24px rgba(10,15,26,.07)' }
+    cloud: {
+      bg: 'linear-gradient(180deg,#F9FAFB,#F1F3F9)',
+      panel: 'linear-gradient(180deg,#FFFFFF,#F6F8FB)',
+      panel2: '#F3F5F9',
+      border: '#E3E8EF',
+      text: '#0B1220',
+      muted: '#5B6474',
+      muted2: '#7A8596',
+      accent: '#2563EB',
+      ring: '#93C5FD',
+      shadow: '0 0 0 1px rgba(16,24,40,.04), 0 2px 4px rgba(16,24,40,.08), 0 12px 20px rgba(16,24,40,.08)'
+    },
+    cloudContrast: {
+      bg: 'linear-gradient(180deg,#EEF2F7,#E2E8F0)',
+      panel: 'linear-gradient(180deg,#FFFFFF,#F1F5F9)',
+      panel2: '#EEF1F6',
+      border: '#D9E0EA',
+      text: '#0A0F1A',
+      muted: '#4D5461',
+      muted2: '#6B7280',
+      accent: '#1D4ED8',
+      ring: '#93C5FD',
+      shadow: '0 0 0 1px rgba(10,15,26,.05), 0 2px 6px rgba(10,15,26,.08), 0 14px 24px rgba(10,15,26,.1)'
+    }
   },
   dark: {
-    obsidian:  { bg:'#0D1117', panel:'#111827', panel2:'#0F172A', border:'#263040', text:'#E6EDF3', muted:'#9BA7B4', muted2:'#7E8B98', accent:'#2B73F7', ring:'#2B73F7', shadow:'0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.35)' },
-    nightBlue: { bg:'#0B1220', panel:'#0F172A', panel2:'#101A2E', border:'#1E293B', text:'#E4EAF2', muted:'#A5B1C0', muted2:'#8894A3', accent:'#3A7BFF', ring:'#3A7BFF', shadow:'0 1px 2px rgba(0,0,0,.55), 0 10px 28px rgba(0,0,0,.4)' }
+    obsidian: {
+      bg: 'linear-gradient(180deg,#0D1117,#141A23)',
+      panel: 'linear-gradient(180deg,#111827,#1A2333)',
+      panel2: '#0F172A',
+      border: '#263040',
+      text: '#E6EDF3',
+      muted: '#9BA7B4',
+      muted2: '#7E8B98',
+      accent: '#3366FF',
+      ring: '#3366FF',
+      shadow: '0 0 0 1px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.4), 0 16px 32px rgba(0,0,0,.5)'
+    },
+    nightBlue: {
+      bg: 'linear-gradient(180deg,#0B1220,#132035)',
+      panel: 'linear-gradient(180deg,#0F172A,#18233B)',
+      panel2: '#101A2E',
+      border: '#1E293B',
+      text: '#E4EAF2',
+      muted: '#A5B1C0',
+      muted2: '#8894A3',
+      accent: '#2B6DE9',
+      ring: '#2B6DE9',
+      shadow: '0 0 0 1px rgba(0,0,0,.55), 0 4px 8px rgba(0,0,0,.45), 0 18px 36px rgba(0,0,0,.5)'
+    }
   }
 };
 function applyThemeTokens(){
