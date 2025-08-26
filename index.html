@@ -9,7 +9,7 @@
     --bg:linear-gradient(180deg,#F9FAFB,#F1F3F9); --panel:linear-gradient(180deg,#FFFFFF,#F6F8FB); --panel-2:#F3F5F9; --border:#E3E8EF;
     --text:#0B1220; --muted:#5B6474; --muted-2:#7A8596; --accent:#2563EB; --ring:#93C5FD;
     --shadow:0 0 0 1px rgba(16,24,40,.04), 0 2px 4px rgba(16,24,40,.08), 0 12px 20px rgba(16,24,40,.08);
-    --shadow-hover:0 0 0 1px rgba(16,24,40,.06), 0 4px 8px rgba(16,24,40,.1), 0 16px 24px rgba(16,24,40,.1);
+    --shadow-hover:0 0 0 1px rgba(16,24,40,.05), 0 3px 6px rgba(16,24,40,.08), 0 10px 16px rgba(16,24,40,.06);
     --radius:16px; --cols-3: 1fr 1.6fr 1fr; --gradient-alpha: .06;
     --content-max: 2200px; --sidebar-w: 264px; --sidebar-w-collapsed: 64px;
   }
@@ -78,7 +78,7 @@
   .drag.dragging{opacity:.6}
   .placeholder{border:2px dashed var(--border);border-radius:var(--radius);min-height:80px}
   .card{position:relative;border-radius:var(--radius);border:1px solid var(--border);padding:16px;background:var(--panel);box-shadow:var(--shadow);transition:transform .12s,background .15s,box-shadow .15s}
-  .card:hover{transform:translateY(-1px);background:var(--panel-2);box-shadow:var(--shadow-hover)}
+  .card:hover{transform:translateY(-0.5px);background:var(--panel-2);box-shadow:var(--shadow-hover)}
   .badge{position:absolute;top:8px;right:8px;font-size:11px;padding:4px 8px;border-radius:999px}
   .warn{background:#FFF3D6;color:#A66B00}
   .bad{background:#FDE2E2;color:#B42318}
