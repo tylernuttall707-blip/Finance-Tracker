@@ -50,6 +50,11 @@ chart type, color palette, and more. A sample widget configuration object:
 }
 ```
 
+## Animations
+
+Interactive elements use a shared `--anim-duration` CSS variable to control transition timing.
+Animations are disabled when users enable the `prefers-reduced-motion` setting in their system preferences.
+
 ### Data Storage
 
 All preferences and financial data are stored in the browser's `localStorage`

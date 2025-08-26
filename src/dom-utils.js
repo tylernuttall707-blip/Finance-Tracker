@@ -14,7 +14,7 @@ export function h(tag, attrs = {}, ...children) {
       el.setAttribute('style', Object.entries(v).map(([a, b]) => `${a}:${b}`).join(';'));
     else if (v !== false && v != null) el.setAttribute(k, v === true ? '' : v);
   }
-  if (rest.class && rest.class.split(/\s+/).some(c => ['btn','item','card','collapse-btn','chip','swatch','knob'].includes(c))) {
+  if (rest.class && rest.class.split(/\s+/).some(c => ['btn','item','card','collapse-btn','chip','swatch','switch','knob'].includes(c))) {
     const t = 'background var(--anim-duration),color var(--anim-duration),transform var(--anim-duration)';
     el.style.transition = el.style.transition ? el.style.transition + ',' + t : t;
   }

@@ -38,8 +38,11 @@ describe('h helper', () => {
     h = module.exports.h;
   });
 
-  test('adds transition styles for interactive classes', () => {
-    const el = h('button', { class: 'btn' }, 'Hi');
+  test.each([
+    ['button', 'btn'],
+    ['div', 'switch']
+  ])('adds transition styles for %s.%s', (tag, cls) => {
+    const el = h(tag, { class: cls }, 'Hi');
     expect(el.style.transition).toBe('background var(--anim-duration),color var(--anim-duration),transform var(--anim-duration)');
   });
 });
