@@ -1,4 +1,4 @@
-import {h} from './app.js';
+import {h} from './dom-utils.js';
 
 export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
