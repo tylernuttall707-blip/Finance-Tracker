@@ -1,4 +1,5 @@
 import {h, clamp} from './dom-utils.js';
+const uid = () => globalThis.crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36);
 export function widget(id, content, size, heightMode, {state}) {
   const el = h('section', {
     class: 'panel p4 drag',
@@ -22,17 +23,21 @@ export function widget(id, content, size, heightMode, {state}) {
 export function addWidgetControls(wrapper, id, orderKey, dash, {state, save, render, configureWidget}) {
   const size = state.widgetSize[id] || 1;
   const hmode = state.widgetHeightMode[id] || 'auto';
+  const heightId = uid();
+  const pxId = uid();
   const row = h('div', { style: 'display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;align-items:center;' },
     h('div', { class: 'sizepick' },
       ...[1, 2, 3, 4, 5, 6].map(n => h('button', { 'aria-pressed': String(size === n), onclick: () => { state.widgetSize[id] = n; save(); wrapper.style.gridColumn = 'span ' + n; } }, String(n)))
     ),
-    h('div', { class: 'field', style: 'width:160px;' }, h('label', null, 'Height'),
-      h('select', { onchange: e => { state.widgetHeightMode[id] = e.target.value; save(); render(); } },
+    h('div', { class: 'field', style: 'width:160px;' },
+      h('label', {for: heightId}, 'Height'),
+      h('select', {id: heightId, onchange: e => { state.widgetHeightMode[id] = e.target.value; save(); render(); } },
         ...[['auto', 'Auto'], ['short', 'Short'], ['medium', 'Medium'], ['tall', 'Tall'], ['fixed', 'Fixed px']].map(([v, l]) => h('option', { value: v, selected: hmode === v ? 'selected' : null }, l))
       )
     ),
-    h('div', { class: 'field', style: 'width:110px;' + (hmode === 'fixed' ? '' : 'display:none;') }, h('label', null, 'Pixels'),
-      h('input', { type: 'number', value: String(state.widgetFixedH[id] || 320), oninput: e => { state.widgetFixedH[id] = e.target.value; save(); render(); } })
+    h('div', { class: 'field', style: 'width:110px;' + (hmode === 'fixed' ? '' : 'display:none;') },
+      h('label', {for: pxId}, 'Pixels'),
+      h('input', { id: pxId, type: 'number', value: String(state.widgetFixedH[id] || 320), oninput: e => { state.widgetFixedH[id] = e.target.value; save(); render(); } })
     ),
     h('button', { class: 'btn tiny', onclick: () => configureWidget(id) }, 'Configure'),
     h('button', { class: 'btn tiny', onclick: () => { state[orderKey] = state[orderKey].filter(x => x !== id); save(); render(); } }, 'Remove')

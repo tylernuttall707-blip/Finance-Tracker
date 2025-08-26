@@ -238,14 +238,33 @@ function lineChart(data,{height=160,color,yMin=null,yMax=null}={}){
 /* ---------- Small UI helpers ---------- */
 function sectionTitle(t){ return h('div',{class:'title'}, t); }
 function kpi(label,value){ return h('div',{class:'kpi'}, h('div',{class:'label'},label), h('div',{class:'value'}, value)); }
-function fieldInput(label,value,onChange,type='text'){ return h('div',{class:'field'}, h('label',null,label), h('input',{type,value:value??'',oninput:e=>onChange(e.target.value)})); }
-function currencyInput(value,onChange,label){ const f=h('div',{class:'field'}, label?h('label',null,label):null,
-  h('div',{style:'position:relative;'}, h('span',{style:'position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'$'),
-    h('input',{type:'text',value:value==null?'':String(value),style:'padding-left:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');onChange(raw===''?null:raw);},onfocus:e=>{e.target.value=e.target.value.replace(/,/g,'');},onblur:e=>{const n=asNumber(e.target.value);e.target.value=(n==null?'':Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));onChange(n);}}))); return f; }
-function percentInput(value,onChange,label){ const f=h('div',{class:'field'}, label?h('label',null,label):null,
-  h('div',{style:'position:relative;'},
-    h('input',{type:'text',value:value==null?'':String(value),style:'padding-right:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');onChange(raw);},onblur:e=>{const n=Number(e.target.value);e.target.value=isFinite(n)?n.toFixed(2):'';onChange(e.target.value);}}),
-    h('span',{style:'position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'%'))); return f; }
+function fieldInput(label,value,onChange,type='text'){
+  const id=uid();
+  return h('div',{class:'field'},
+    h('label',{for:id},label),
+    h('input',{id,type,value:value??'',oninput:e=>onChange(e.target.value)})
+  );
+}
+function currencyInput(value,onChange,label){
+  const id=uid();
+  const f=h('div',{class:'field'}, label?h('label',{for:id},label):null,
+    h('div',{style:'position:relative;'},
+      h('span',{style:'position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'$'),
+      h('input',{id,type:'text',value:value==null?'':String(value),style:'padding-left:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');onChange(raw===''?null:raw);},onfocus:e=>{e.target.value=e.target.value.replace(/,/g,'');},onblur:e=>{const n=asNumber(e.target.value);e.target.value=(n==null?'':Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));onChange(n);}})
+    )
+  );
+  return f;
+}
+function percentInput(value,onChange,label){
+  const id=uid();
+  const f=h('div',{class:'field'}, label?h('label',{for:id},label):null,
+    h('div',{style:'position:relative;'},
+      h('input',{id,type:'text',value:value==null?'':String(value),style:'padding-right:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\-]/g,'');onChange(raw);},onblur:e=>{const n=Number(e.target.value);e.target.value=isFinite(n)?n.toFixed(2):'';onChange(e.target.value);}}),
+      h('span',{style:'position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'%')
+    )
+  );
+  return f;
+}
 /* ---------- Configure modal ---------- */
 function showModal(title, contentBuilder, onSave){
   const scrim=h('div',{style:'position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;z-index:10000;'});
@@ -263,30 +282,30 @@ export function configureWidget(id){
   const cfg = Object.assign({}, getCfg(id));
   showModal('Configure widget', (wrap)=>{
     wrap.appendChild(h('div',{class:'grid grid-2'},
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'Chart type'));
-        const sel=h('select',{onchange:e=>cfg.chartType=e.target.value},
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'Chart type'));
+        const sel=h('select',{id, onchange:e=>cfg.chartType=e.target.value},
           ...['auto','line','bar','pie'].map(v=>h('option',{value:v,selected:cfg.chartType===v?'selected':null},v)));
         f.appendChild(sel); return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'Series color'));
-        f.appendChild(h('input',{type:'color', value: cfg.color || '#3b82f6', oninput:e=>cfg.color=e.target.value}));
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'Series color'));
+        f.appendChild(h('input',{id,type:'color', value: cfg.color || '#3b82f6', oninput:e=>cfg.color=e.target.value}));
         return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'Palette'));
-        const sel=h('select',{onchange:e=>cfg.palette=e.target.value},
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'Palette'));
+        const sel=h('select',{id,onchange:e=>cfg.palette=e.target.value},
           h('option',{value:'card',selected:cfg.palette==='card'?'selected':null},'Use card colors'),
           h('option',{value:'mono',selected:cfg.palette==='mono'?'selected':null},'Single color'));
         f.appendChild(sel); return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'Y min'));
-        f.appendChild(h('input',{type:'number',value:cfg.yMin??'',oninput:e=>cfg.yMin=e.target.value===''?null:Number(e.target.value)}));
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'Y min'));
+        f.appendChild(h('input',{id,type:'number',value:cfg.yMin??'',oninput:e=>cfg.yMin=e.target.value===''?null:Number(e.target.value)}));
         return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'Y max'));
-        f.appendChild(h('input',{type:'number',value:cfg.yMax??'',oninput:e=>cfg.yMax=e.target.value===''?null:Number(e.target.value)}));
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'Y max'));
+        f.appendChild(h('input',{id,type:'number',value:cfg.yMax??'',oninput:e=>cfg.yMax=e.target.value===''?null:Number(e.target.value)}));
         return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'From date'));
-        f.appendChild(h('input',{type:'date',value:cfg.from||'',oninput:e=>cfg.from=e.target.value})); return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'To date'));
-        f.appendChild(h('input',{type:'date',value:cfg.to||'',oninput:e=>cfg.to=e.target.value})); return f; })(),
-      (function(){ const f=h('div',{class:'field'}, h('label',null,'Group by (subtotals)'));
-        const sel=h('select',{onchange:e=>cfg.groupBy=e.target.value},
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'From date'));
+        f.appendChild(h('input',{id,type:'date',value:cfg.from||'',oninput:e=>cfg.from=e.target.value})); return f; })(),
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'To date'));
+        f.appendChild(h('input',{id,type:'date',value:cfg.to||'',oninput:e=>cfg.to=e.target.value})); return f; })(),
+      (function(){ const id=uid(); const f=h('div',{class:'field'}, h('label',{for:id},'Group by (subtotals)'));
+        const sel=h('select',{id,onchange:e=>cfg.groupBy=e.target.value},
           h('option',{value:'',selected:!cfg.groupBy?'selected':null},'None'),
           h('option',{value:'issuer',selected:cfg.groupBy==='issuer'?'selected':null},'Issuer')
         ); f.appendChild(sel); return f; })()
@@ -330,15 +349,16 @@ function appHeader(){
     h('div',null, h('h1',null, (state.company||'Company Finance')),
       h('div',{class:'muted'}, 'Stable dashboards • debounced branding • more settings')),
     h('div',{style:'display:flex;gap:8px;align-items:center;'},
-      h('label',{class:'btn'}, 'Import JSON',
-        h('input',{type:'file',accept:'application/json',style:'display:none;',onchange:(e)=>{
+      (function(){ const importId=uid(); return h('div',null,
+        h('input',{id:importId,type:'file',accept:'application/json',style:'display:none;',onchange:(e)=>{
           const f=e.target.files&&e.target.files[0]; if(!f) return;
           const reader=new FileReader(); reader.onload=ev=>{
             try{ const data=JSON.parse(String(ev.target.result||'{}')); Object.assign(state, seed(), data); save(); render(); showToast('Import complete','State loaded.'); }
             catch(err){ alert('Import failed: '+err.message); }
           }; reader.readAsText(f);
-        }})
-      ),
+        }}),
+        h('label',{class:'btn',for:importId}, 'Import JSON')
+      ); })(),
       h('button',{class:'btn',onclick:()=>{
         const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
         const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=(state.company||'company')+'-finance-export-'+todayISO()+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},0);
@@ -361,9 +381,10 @@ function customizeBar(dash, orderKey, gridId){
     h('div',{style:'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;'},
       h('div',null, h('strong',null,'Customize: '), h('span',{class:'muted'}, dash.charAt(0).toUpperCase()+dash.slice(1))),
       h('div',{style:'display:flex;gap:8px;align-items:center;'},
-        h('div',null, h('div',{class:'muted'},'Center column weight'),
-          h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); applyThemeTokens(); }})
-        ),
+        (function(){ const centerId=uid(); return h('div',null,
+          h('label',{for:centerId,class:'muted'},'Center column weight'),
+          h('input',{id:centerId,type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); applyThemeTokens(); }})
+        ); })(),
         h('button',{class:'btn tiny',onclick:()=>{ state[orderKey] = availableForDashboard(dash).slice(); save(); render(); showToast('Reset','Widget list restored for '+dash+'.'); }},'Reset'),
         h('button',{class:'btn tiny',onclick:()=>{ state.ui.customizing=null; save(); render(); }},'Done')
       )
@@ -445,10 +466,13 @@ function ccCardsGridWidget(){
 }
 function colorPickerField(label, current, onHexChange){
   const palette=['#3b82f6','#0ea5e9','#10b981','#f59e0b','#ef4444','#a855f7','#14b8a6','#f97316','#64748b','#22c55e','#e11d48'];
-  const container=h('div',{class:'field'}, h('label',null,label),
+  const colorId=uid();
+  const hexId=uid();
+  const container=h('div',{class:'field'}, h('label',{for:colorId},label),
     h('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'},
-      h('input',{type:'color', value: current||'#3b82f6', oninput:e=>{ onHexChange(e.target.value); }}),
-      h('input',{type:'text', value: current||'#3b82f6', oninput:e=>onHexChange(e.target.value)}),
+      h('input',{id:colorId,type:'color', value: current||'#3b82f6', oninput:e=>{ onHexChange(e.target.value); }}),
+      h('label',{for:hexId,style:'position:absolute;left:-10000px;'},'Hex'),
+      h('input',{id:hexId,type:'text', value: current||'#3b82f6', oninput:e=>onHexChange(e.target.value)}),
       h('div',{class:'palette'}, ...palette.map(hex=> h('div',{class:'swatch',style:'background:'+hex, onclick:()=>{ onHexChange(hex); render(); }})))
     )
   );
@@ -466,21 +490,21 @@ function ccCards(){
       sectionTitle(card.name+' — Settings'),
       h('div',{class:'grid grid-3'},
         fieldInput('Card Name', card.name, v=>{card.name=v; save();}),
-        h('div',{class:'field'}, h('label',null,'Issuer'),
-          h('select',{onchange:e=>{card.issuer=e.target.value; save(); render();}},
+        (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Issuer'),
+          h('select',{id,onchange:e=>{card.issuer=e.target.value; save(); render();}},
             ...['Chase','AmEx','Other'].map(x=> h('option',{value:x, selected:card.issuer===x?'selected':null}, x))
           )
-        ),
+        ); })(),
         (function(){ const w=h('div'); w.appendChild(currencyInput(card.limit==null?'':card.limit, v=>{card.limit=asNumber(v); save();}, 'Credit Limit')); return w; })(),
         (function(){ const w=h('div'); w.appendChild(percentInput(card.apr==null?'':card.apr, v=>{card.apr=v===''?null:Number(v); save();}, 'APR %')); return w; })(),
         colorPickerField('Card Color', card.color||'#3b82f6', hex=>{ card.color=hex; save(); }),
         fieldInput('Utilization Target %', card.utilTarget??'', v=>{card.utilTarget=v===''?null:Number(v); save();}),
-        h('div',{class:'field'}, h('label',null,'Use Gradient?'),
-          h('select',{onchange:e=>{ card.useGradient=e.target.value==='yes'; save(); render(); }},
+        (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Use Gradient?'),
+          h('select',{id,onchange:e=>{ card.useGradient=e.target.value==='yes'; save(); render(); }},
             h('option',{value:'yes', selected:card.useGradient!==false?'selected':null}, 'Yes'),
             h('option',{value:'no', selected:card.useGradient===false?'selected':null}, 'No')
           )
-        ),
+        ); })(),
         ...(card.issuer==='Chase' ? [
           fieldInput('Fixed Due Day (1–28)', card.fixedDueDay??12, v=>{card.fixedDueDay=clampDay(v); save();}),
           fieldInput('Fixed Close Day (1–28)', card.fixedCloseDay??15, v=>{card.fixedCloseDay=clampDay(v); save();}),
@@ -505,11 +529,11 @@ function ccLog(){
   function suggestClose(){ if(!selected) return; if(selected.issuer==='Chase'){ return nextMonthlyDateFrom(selected.fixedCloseDay||15, draft.date); } const last=lastEntry(selected.id); if(last?.statementEnd) return last.statementEnd; return draft.statementEnd||todayISO(); }
   const form = h('div',{class:'panel p4',style:'margin-top:10px;'},
     sectionTitle('Log Daily Entry'),
-    h('div',{class:'field'}, h('label',null,'Card'),
-      h('select',{onchange:e=>{ state.selectedCardId=e.target.value; save(); render(); }},
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Card'),
+      h('select',{id,onchange:e=>{ state.selectedCardId=e.target.value; save(); render(); }},
         ...state.cards.map(c=> h('option',{value:c.id, selected:(selected&&selected.id===c.id)?'selected':null}, c.name))
       )
-    ),
+    ); })(),
     h('div',{class:'grid grid-2'},
       fieldInput('Date', draft.date, v=>draft.date=v, 'date'),
       h('div',null, h('div',{style:'display:flex;gap:6px; align-items:end;'},
@@ -535,7 +559,7 @@ function ccLog(){
       currencyInput(draft.minPayment, v=> draft.minPayment=v, 'Minimum Payment'),
       currencyInput(draft.overLimit, v=> draft.overLimit=v, 'Over Limit (if any)')
     ),
-    h('div',{class:'field'}, h('label',null,'Notes'), h('textarea',{rows:3,oninput:e=>draft.notes=e.target.value,value:draft.notes||''})),
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Notes'), h('textarea',{id,rows:3,oninput:e=>draft.notes=e.target.value,value:draft.notes||''})); })(),
     h('div',null,
       h('button',{class:'btn primary',onclick:()=>{
         if (!selected){ alert('Select or create a card first.'); return; }
@@ -552,12 +576,12 @@ function ccLog(){
   const hist = h('div',{class:'panel p4',style:'margin-top:10px;'},
     sectionTitle('History'),
     h('div',{style:'display:flex;gap:8px;align-items:end;flex-wrap:wrap;'},
-      h('div',{class:'field'}, h('label',null,'Show'),
-        h('select',{onchange:e=>{ histFilter.mode=e.target.value; render(); }},
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Show'),
+        h('select',{id,onchange:e=>{ histFilter.mode=e.target.value; render(); }},
           h('option',{value:'selected', selected: histFilter.mode==='selected'?'selected':null}, 'Selected card'),
           h('option',{value:'all', selected: histFilter.mode==='all'?'selected':null}, 'All cards')
         )
-      ),
+      ); })(),
       fieldInput('From', histFilter.from||'', v=>{ histFilter.from=v; }, 'date'),
       fieldInput('To', histFilter.to||'', v=>{ histFilter.to=v; }, 'date'),
       h('button',{class:'btn tiny',onclick:()=> render()},'Apply')
@@ -623,19 +647,19 @@ function finLog(){
   const d = state.ui.finDraft = state.ui.finDraft||{ accountId:'', date: todayISO(), balance:'', inflow:'', outflow:'' , notes:'' };
   const left=h('div',{class:'panel p4',style:'margin-top:10px;'},
     sectionTitle('Daily Account Log'),
-    h('div',{class:'field'}, h('label',null,'Account'),
-      h('select',{onchange:e=>{ d.accountId=e.target.value; }},
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Account'),
+      h('select',{id,onchange:e=>{ d.accountId=e.target.value; }},
         h('option',{value:''},'— Select —'),
         ...state.finAccounts.map(a=> h('option',{value:a.id, selected:d.accountId===a.id?'selected':null}, a.name))
       )
-    ),
+    ); })(),
     h('div',{class:'grid grid-2'},
       fieldInput('Date', d.date, v=>d.date=v, 'date'),
       currencyInput(d.balance, v=>d.balance=v, 'Balance'),
       currencyInput(d.inflow, v=>d.inflow=v, 'Inflow (optional)'),
       currencyInput(d.outflow, v=>d.outflow=v, 'Outflow (optional)')
     ),
-    h('div',{class:'field'}, h('label',null,'Notes'), h('textarea',{rows:3,oninput:e=>d.notes=e.target.value,value:d.notes||''})),
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Notes'), h('textarea',{id,rows:3,oninput:e=>d.notes=e.target.value,value:d.notes||''})); })(),
     h('div',null,
       h('button',{class:'btn primary',onclick:()=>{
         const acc = getAcc(d.accountId); if(!acc){ alert('Select an account'); return; }
@@ -677,20 +701,20 @@ function finUpcoming(){
   const d={ accountId:'', date: todayISO(), amount:'', desc:'', paid:false };
   const form=h('div',{class:'panel p4'}, sectionTitle('Add Expense'),
     h('div',{class:'grid grid-3'},
-      h('div',{class:'field'}, h('label',null,'Account'),
-        h('select',{onchange:e=>{ d.accountId=e.target.value; }},
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Account'),
+        h('select',{id,onchange:e=>{ d.accountId=e.target.value; }},
           h('option',{value:''},'— Select —'),
           ...state.finAccounts.map(a=> h('option',{value:a.id}, a.name))
         )
-      ),
+      ); })(),
       fieldInput('Date', d.date, v=>d.date=v, 'date'),
       currencyInput(d.amount, v=>d.amount=v, 'Amount'),
       fieldInput('Description', d.desc, v=>d.desc=v),
-      h('div',{class:'field'}, h('label',null,'Paid?'),
-        h('select',{onchange:e=>{ d.paid = e.target.value==='yes'; }},
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Paid?'),
+        h('select',{id,onchange:e=>{ d.paid = e.target.value==='yes'; }},
           h('option',{value:'no'},'No'), h('option',{value:'yes'},'Yes')
         )
-      )
+      ); })()
     ),
     h('div',null, h('button',{class:'btn primary',onclick:()=>{
       if(!d.accountId){ alert('Select an account'); return; }
@@ -915,67 +939,67 @@ function settingsSection(){
    sectionTitle('Theme & Appearance'),
    h('div',{class:'grid grid-2'},
  
-     // Mode
-     h('div',{class:'field'}, h('label',null,'Mode'),
-       h('select',{onchange:e=>{ state.theme=e.target.value; save(); render(); }},
-         h('option',{value:'light', selected: state.theme==='light'?'selected':null}, 'Light'),
-         h('option',{value:'dark',  selected: state.theme==='dark' ?'selected':null}, 'Dark')
-       )
-     ),
+    // Mode
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Mode'),
+      h('select',{id,onchange:e=>{ state.theme=e.target.value; save(); render(); }},
+        h('option',{value:'light', selected: state.theme==='light'?'selected':null}, 'Light'),
+        h('option',{value:'dark',  selected: state.theme==='dark' ?'selected':null}, 'Dark')
+      )
+    ); })(),
 
-     // Accent color
-     h('div',{class:'field'}, h('label',null,'Accent'),
-       h('input',{type:'color', value: state.accentColor||'#2B73F7',
-         oninput:e=>{ state.accentColor=e.target.value; save(); }})
-     ),
+    // Accent color
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Accent'),
+      h('input',{id,type:'color', value: state.accentColor||'#2B73F7',
+        oninput:e=>{ state.accentColor=e.target.value; save(); }})
+    ); })(),
 
-     // Presets
-     h('div',{class:'field'}, h('label',null,'Light preset'),
-       h('select',{onchange:e=>{ state.themeLightPreset=e.target.value; save(); render(); }},
-         ...lightKeys.map(k=> h('option',{value:k, selected: state.themeLightPreset===k?'selected':null}, k)))
-     ),
-     h('div',{class:'field'}, h('label',null,'Dark preset'),
-       h('select',{onchange:e=>{ state.themeDarkPreset=e.target.value; save(); render(); }},
-         ...darkKeys.map(k=> h('option',{value:k, selected: state.themeDarkPreset===k?'selected':null}, k)))
-     ),
+    // Presets
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Light preset'),
+      h('select',{id,onchange:e=>{ state.themeLightPreset=e.target.value; save(); render(); }},
+        ...lightKeys.map(k=> h('option',{value:k, selected: state.themeLightPreset===k?'selected':null}, k)))
+    ); })(),
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Dark preset'),
+      h('select',{id,onchange:e=>{ state.themeDarkPreset=e.target.value; save(); render(); }},
+        ...darkKeys.map(k=> h('option',{value:k, selected: state.themeDarkPreset===k?'selected':null}, k)))
+    ); })(),
 
-     // Card gradient
-     h('div',{class:'field'}, h('label',null,'Card gradient (subtle)'),
-       h('input',{type:'range',min:'0',max:'.12',step:'.01',
-         value:String(state.ui.gradientAlpha??.06),
-         oninput:e=>{ state.ui.gradientAlpha=parseFloat(e.target.value); save(); render(); }})
-     ),
+    // Card gradient
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Card gradient (subtle)'),
+      h('input',{id,type:'range',min:'0',max:'.12',step:'.01',
+        value:String(state.ui.gradientAlpha??.06),
+        oninput:e=>{ state.ui.gradientAlpha=parseFloat(e.target.value); save(); render(); }})
+    ); })(),
 
-     // Radius
-     h('div',{class:'field'}, h('label',null,'Corner radius'),
-       h('input',{type:'range',min:'10',max:'20',step:'1',
-         value:String(state.ui.radiusPx||16),
-         oninput:e=>{ state.ui.radiusPx=Number(e.target.value); save(); render(); }})
-     ),
+    // Radius
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Corner radius'),
+      h('input',{id,type:'range',min:'10',max:'20',step:'1',
+        value:String(state.ui.radiusPx||16),
+        oninput:e=>{ state.ui.radiusPx=Number(e.target.value); save(); render(); }})
+    ); })(),
 
-     // Center column weight
-     h('div',{class:'field'}, h('label',null,'Center column weight'),
-       h('input',{type:'range',min:'1.3',max:'1.8',step:'0.1',
-         value:String(state.ui.centerWeight||1.6),
-         oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); render(); }})
-     ),
+    // Center column weight
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Center column weight'),
+      h('input',{id,type:'range',min:'1.3',max:'1.8',step:'0.1',
+        value:String(state.ui.centerWeight||1.6),
+        oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); render(); }})
+    ); })(),
 
-     // NEW: Full-width toggle
-     h('div',{class:'field'}, h('label',null,'Full width (ultrawide)'),
-       h('select',{onchange:e=>{ state.ui.fullWidth = (e.target.value==='yes'); save(); render(); }},
-         h('option',{value:'no',  selected:!state.ui.fullWidth?'selected':null},'No'),
-         h('option',{value:'yes', selected: state.ui.fullWidth?'selected':null},'Yes'))
-     ),
+    // NEW: Full-width toggle
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Full width (ultrawide)'),
+      h('select',{id,onchange:e=>{ state.ui.fullWidth = (e.target.value==='yes'); save(); render(); }},
+        h('option',{value:'no',  selected:!state.ui.fullWidth?'selected':null},'No'),
+        h('option',{value:'yes', selected: state.ui.fullWidth?'selected':null},'Yes'))
+    ); })(),
 
-     // NEW: Max width when not full
-     h('div',{class:'field'}, h('label',null,'Max width (px when not full)'),
-       h('input',{type:'number', min:'1200', max:'4000',
-         value:String(state.ui.contentMaxPx ?? 2200),
-         oninput:e=>{
-           state.ui.contentMaxPx = clamp(Number(e.target.value||2200), 1200, 4000);
-           save(); applyThemeTokens();
-         }})
-     )
+    // NEW: Max width when not full
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Max width (px when not full)'),
+      h('input',{id,type:'number', min:'1200', max:'4000',
+        value:String(state.ui.contentMaxPx ?? 2200),
+        oninput:e=>{
+          state.ui.contentMaxPx = clamp(Number(e.target.value||2200), 1200, 4000);
+          save(); applyThemeTokens();
+        }})
+    ); })()
 
    )
  );
@@ -983,14 +1007,14 @@ function settingsSection(){
   const orgPanel=h('div',{class:'panel p4'},
     sectionTitle('Branding'),
     h('div',{class:'grid grid-2'},
-      (function(){ const val = state.ui.companyDraft || state.company || ''; return h('div',{class:'field'}, h('label',null,'Company Name (updates after you pause typing)'), h('input',{type:'text', value:val, oninput:e=>{ state.ui.companyDraft=e.target.value; queueCompanySave(); }})); })(),
-      h('div',{class:'field'}, h('label',null,'Logo (square works best)'),
-        h('input',{type:'file',accept:'image/*',onchange:(e)=>{
+      (function(){ const val = state.ui.companyDraft || state.company || ''; const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Company Name (updates after you pause typing)'), h('input',{id,type:'text', value:val, oninput:e=>{ state.ui.companyDraft=e.target.value; queueCompanySave(); }})); })(),
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Logo (square works best)'),
+        h('input',{id,type:'file',accept:'image/*',onchange:(e)=>{
           const f=e.target.files&&e.target.files[0]; if(!f) return;
           const r=new FileReader(); r.onload = ev=>{ state.logoData=String(ev.target.result||''); save(); render(); };
           r.readAsDataURL(f);
         }})
-      ),
+      ); })(),
       h('div',null, h('button',{class:'btn tiny',onclick:()=>{ state.logoData=''; save(); render(); }},'Clear logo'))
     )
   );
@@ -998,50 +1022,50 @@ function settingsSection(){
   const dashPanel=h('div',{class:'panel p4'},
     sectionTitle('Dashboard Settings'),
     h('div',{class:'grid grid-2'},
-      h('div',{class:'field'}, h('label',null,'Cards overview columns'),
-        h('input',{type:'range',min:'1',max:'4',step:'1',
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Cards overview columns'),
+        h('input',{id,type:'range',min:'1',max:'4',step:'1',
           value:String(clamp(state.ui.ccCardsCols??2,1,4)),
           oninput:e=>{ state.ui.ccCardsCols=clamp(Number(e.target.value||2),1,4); save(); render(); }
         })
-      )
+      ); })()
     )
   );
 
   const uxPanel=h('div',{class:'panel p4'},
     sectionTitle('UX Preferences'),
     h('div',{class:'grid grid-2'},
-      h('div',{class:'field'}, h('label',null,'Table density'),
-        h('select',{onchange:e=>{ document.body.dataset.density=e.target.value; }},
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Table density'),
+        h('select',{id,onchange:e=>{ document.body.dataset.density=e.target.value; }},
           h('option',{value:'cozy'},'Cozy'),
           h('option',{value:'compact'},'Compact')
         )
-      ),
-      h('div',{class:'field'}, h('label',null,'Animations'),
-        h('select',{onchange:e=>{ document.body.dataset.anim=e.target.value; }},
+      ); })(),
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Animations'),
+        h('select',{id,onchange:e=>{ document.body.dataset.anim=e.target.value; }},
           h('option',{value:'on'},'On'), h('option',{value:'off'},'Off')
         )
-      ),
-      h('div',{class:'field'}, h('label',null,'Number formatting (thousands)'),
-        h('select',{onchange:e=>{ state.ui.useGrouping = (e.target.value==='on'); save(); }},
+      ); })(),
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Number formatting (thousands)'),
+        h('select',{id,onchange:e=>{ state.ui.useGrouping = (e.target.value==='on'); save(); }},
           h('option',{value:'on', selected: state.ui.useGrouping!==false?'selected':null},'On'),
           h('option',{value:'off', selected: state.ui.useGrouping===false?'selected':null},'Off')
         )
-      ),
-      h('div',{class:'field'}, h('label',null,'Overview columns'),
-        h('input',{type:'number',min:'1',max:'6',
+      ); })(),
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Overview columns'),
+        h('input',{id,type:'number',min:'1',max:'6',
           value:String(state.ui.colCount?.overview || 3),
           oninput:e=>{ state.ui.colCount.overview = clamp(Number(e.target.value||3),1,6); save(); render(); }})
-      ),
-      h('div',{class:'field'}, h('label',null,'Credit columns'),
-        h('input',{type:'number',min:'1',max:'6',
+      ); })(),
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Credit columns'),
+        h('input',{id,type:'number',min:'1',max:'6',
           value:String(state.ui.colCount?.credit || 3),
           oninput:e=>{ state.ui.colCount.credit = clamp(Number(e.target.value||3),1,6); save(); render(); }})
-      ),
-      h('div',{class:'field'}, h('label',null,'Financials columns'),
-        h('input',{type:'number',min:'1',max:'6',
+      ); })(),
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Financials columns'),
+        h('input',{id,type:'number',min:'1',max:'6',
           value:String(state.ui.colCount?.financials || 3),
           oninput:e=>{ state.ui.colCount.financials = clamp(Number(e.target.value||3),1,6); save(); render(); }})
-      )
+      ); })()
     )
   );
 
