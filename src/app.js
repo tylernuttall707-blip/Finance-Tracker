@@ -358,6 +358,23 @@ export function configureWidget(id){
 }
 
 /* ---------- App chrome ---------- */
+function chevronLeft(){
+  return h('svg',{viewBox:'0 0 24 24','aria-hidden':'true'},
+    h('path',{d:'M15 19l-7-7 7-7',fill:'none',stroke:'currentColor','stroke-width':'2','stroke-linecap':'round','stroke-linejoin':'round'})
+  );
+}
+function chevronRight(){
+  return h('svg',{viewBox:'0 0 24 24','aria-hidden':'true'},
+    h('path',{d:'M9 5l7 7-7 7',fill:'none',stroke:'currentColor','stroke-width':'2','stroke-linecap':'round','stroke-linejoin':'round'})
+  );
+}
+function defaultLogoSvg(){
+  return h('svg',{viewBox:'0 0 24 24','aria-hidden':'true'},
+    h('rect',{x:'3',y:'10',width:'3',height:'11',rx:'1'}),
+    h('rect',{x:'10',y:'6',width:'3',height:'15',rx:'1'}),
+    h('rect',{x:'17',y:'3',width:'3',height:'18',rx:'1'})
+  );
+}
 function appSidebar(){
   const collapsed = !!state.ui.sidebarCollapsed;
   const item=(id, icon, label)=> h('div',{class:'item '+(state.section===id?'active':''), onclick:()=>{ state.section=id; save(); render(); }},
@@ -366,11 +383,11 @@ function appSidebar(){
   const themeSwitch = h('div',{class:'switch '+(state.theme==='dark'?'on':''), onclick:()=>{ state.theme = state.theme==='dark'?'light':'dark'; save(); render(); }},
     h('div',{class:'knob'})
   );
-  const arrow = collapsed ? '▶' : '◀';
-  const logoStyle = state.logoData ? `background-image:url(${state.logoData}); background-size:cover;` : '';
+  const arrow = collapsed ? chevronRight() : chevronLeft();
+  const logoNode = state.logoData ? h('img',{src:state.logoData,alt:'Logo'}) : defaultLogoSvg();
   return h('aside',{class:'sidebar'},
     h('div',{class:'brand'},
-      h('div',{class:'logo', style:logoStyle}),
+      h('div',{class:'logo'}, logoNode),
       collapsed? null : h('div',{class:'title'}, state.company || 'Company Finance'),
       h('button',{class:'collapse-btn',title: collapsed?'Expand sidebar':'Collapse sidebar', onclick:(e)=>{ e.stopPropagation(); state.ui.sidebarCollapsed=!collapsed; save(); render(); }}, arrow)
     ),
