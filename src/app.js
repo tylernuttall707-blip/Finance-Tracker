@@ -264,16 +264,6 @@ function percentInput(value,onChange,label){ const f=h('div',{class:'field'}, la
   h('div',{style:'position:relative;'},
     h('input',{type:'text',value:value==null?'':String(value),style:'padding-right:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');onChange(raw);},onblur:e=>{const n=Number(e.target.value);e.target.value=isFinite(n)?n.toFixed(2):'';onChange(e.target.value);}}),
     h('span',{style:'position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'%'))); return f; }
-  return el;
-}
-  function onDragOver(e){ e.preventDefault(); const target=e.target.closest('[data-widget-id]'); if(!target || target===dragging || !grid.contains(target)) return; const rect=target.getBoundingClientRect(); const before = (e.clientY-rect.top) < rect.height/2; before ? grid.insertBefore(placeholder, target) : grid.insertBefore(placeholder, target.nextSibling); }
-  function onDrop(e){ e.preventDefault(); if(!placeholder||!dragging) return; placeholder.replaceWith(dragging); dragging.classList.remove('dragging'); dragging=null; placeholder=null; persist(); }
-  function onDragEnd(){ if(placeholder && dragging){ placeholder.replaceWith(dragging); } dragging?.classList.remove('dragging'); dragging=null; placeholder=null; persist(); }
-  function persist(){ const ids=$$('#'+grid.id+' > [data-widget-id]').map(x=>x.getAttribute('data-widget-id')); state[orderKey]=ids; save(); }
-  $$('#'+grid.id+' > [data-widget-id]').forEach(el=>{
-    el.addEventListener('dragstart', onDragStart); el.addEventListener('dragover', onDragOver); el.addEventListener('drop', onDrop); el.addEventListener('dragend', onDragEnd);
-  });
-}
 /* ---------- Configure modal ---------- */
 function showModal(title, contentBuilder, onSave){
   const scrim=h('div',{style:'position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;z-index:10000;'});
