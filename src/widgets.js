@@ -32,7 +32,15 @@ export function addWidgetControls(wrapper, id, orderKey, dash, {state, save, ren
       )
     ),
     h('div', { class: 'field', style: 'width:110px;' + (hmode === 'fixed' ? '' : 'display:none;') }, h('label', null, 'Pixels'),
-      h('input', { type: 'number', value: String(state.widgetFixedH[id] || 320), oninput: e => { state.widgetFixedH[id] = e.target.value; save(); render(); } })
+      h('input', {
+        type: 'number',
+        value: String(state.widgetFixedH[id] || 320),
+        oninput: e => {
+          state.widgetFixedH[id] = Number(e.target.value || 320);
+          save();
+          render();
+        }
+      })
     ),
     h('button', { class: 'btn tiny', onclick: () => configureWidget(id) }, 'Configure'),
     h('button', { class: 'btn tiny', onclick: () => { state[orderKey] = state[orderKey].filter(x => x !== id); save(); render(); } }, 'Remove')
