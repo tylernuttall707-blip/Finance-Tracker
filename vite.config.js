@@ -6,4 +6,9 @@ export default defineConfig({
   // subdirectory deployments instead of assuming the site is served from
   // the domain root.
   base: './',
+  build: {
+    rollupOptions: {
+      input: 'index.html',
+    },
+  },
 });

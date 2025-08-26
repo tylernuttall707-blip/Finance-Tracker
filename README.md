@@ -36,6 +36,12 @@ The compiled assets will be output to the `dist/` folder.
 npm test
 ```
 
+## UI Styling
+
+All user interface styles are defined in `src/styles.css`. Update this file to tweak colors,
+layout, or component appearance. The stylesheet is linked from `index.html` and bundled
+by Vite for minification and caching.
+
 ## Configuration
 
 Widgets and dashboard panels can be customized through the in-app settings.
