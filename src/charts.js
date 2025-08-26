@@ -1,6 +1,7 @@
 import {h} from './dom-utils.js';
+import {easeOutCubic} from './easing.js';
 
-export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null,duration=300}={}){
+export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null,duration=300,easing=easeOutCubic}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
   const W=720,H=200,P=28,G=12,N=items.length,BAR=(W-P*2-(N-1)*G)/Math.max(1,N);
   let vals=items.map(i=>Number(i.value)||0);
@@ -32,8 +33,9 @@ export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=nul
     const start=Date.now();
     function frame(){
       const t=Math.min((Date.now()-start)/duration,1);
+      const p=easing(t);
       bars.forEach(b=>{
-        const h=b.bh*t;
+        const h=b.bh*p;
         b.rect.setAttribute('height',h);
         b.rect.setAttribute('y',baseY-h);
         b.top.setAttribute('y',baseY-h-4);
@@ -45,7 +47,7 @@ export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=nul
   return g;
 }
 
-export function pieChart(items,{colors=[],duration=300}={}){
+export function pieChart(items,{colors=[],duration=300,easing=easeOutCubic}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
   const W=220,H=220,R=90,CX=W/2,CY=H/2;
   const total=items.reduce((s,i)=>s+(Number(i.value)||0),0)||1;
@@ -70,8 +72,9 @@ export function pieChart(items,{colors=[],duration=300}={}){
     const start=Date.now();
     function frame(){
       const t=Math.min((Date.now()-start)/duration,1);
+      const p=easing(t);
       slices.forEach(s=>{
-        const a=s.start+(s.end-s.start)*t;
+        const a=s.start+(s.end-s.start)*p;
         const x0=CX+R*Math.cos(s.start), y0=CY+R*Math.sin(s.start);
         const x1=CX+R*Math.cos(a), y1=CY+R*Math.sin(a);
         const large=(a-s.start)>Math.PI?1:0;

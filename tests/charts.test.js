@@ -78,4 +78,22 @@ describe('chart animations', () => {
     const d = g.children[0].attributes.d;
     expect(/A 90 90 0 0 1 20(?:\.0+)? 110/.test(d)).toBe(true);
   });
+
+  test('barChart applies easing function', () => {
+    const origRAF = global.requestAnimationFrame;
+    const origNow = Date.now;
+    Date.now = () => 0;
+    let called = false;
+    global.requestAnimationFrame = fn => { if(!called){ called = true; fn(); } };
+    cache.delete(path.resolve(__dirname,'..','src/charts.js'));
+    const {barChart} = loadModule('src/charts.js');
+    const easing = jest.fn().mockReturnValue(0.25);
+    const g = barChart([{label:'A',value:10}],{duration:100,easing});
+    const rect = g.children[0];
+    expect(easing).toHaveBeenCalledWith(0);
+    expect(rect.attributes.height).toBe('36');
+    expect(rect.attributes.y).toBe('136');
+    global.requestAnimationFrame = origRAF;
+    Date.now = origNow;
+  });
 });
