@@ -78,16 +78,17 @@ function seed(){
    company:'Company Finance', logoData:'',
    theme:'light', themeLightPreset:'cloud', themeDarkPreset:'obsidian', accentColor:'#2B73F7',
    section:'overview', ccView:'dashboard', finView:'dashboard',
-   ui:{
-     sidebarCollapsed:false, centerWeight:1.6, gradientAlpha:.06, radiusPx:16,
-     customizing:null, ccDraft:{}, finDraft:{}, histFilter:{mode:'selected',from:'',to:''},
-     companyDraft:'',
-     // NEW:
-     fullWidth:false,
-     contentMaxPx:2200,
-     colCount:{overview:3, credit:3, financials:3},
-     ccCardsCols:2
-   },
+    ui:{
+    sidebarCollapsed:false, centerWeight:1.6, gradientAlpha:.06, radiusPx:16,
+    customizing:null, ccDraft:{}, finDraft:{}, histFilter:{mode:'selected',from:'',to:''},
+    companyDraft:'',
+    chartAnimMs:300,
+    // NEW:
+    fullWidth:false,
+    contentMaxPx:2200,
+    colCount:{overview:3, credit:3, financials:3},
+    ccCardsCols:2
+    },
    cards:[c1], entries:[], selectedCardId:c1.id,
    finAccounts:[a1,l1], finEntries:[], finExpenses:[],
    order_overview:['ov_finKpis','ov_ccLine','ov_netLine'],
@@ -118,6 +119,7 @@ function load(){
     // ⬇️ ADD THESE DEFAULTS
     obj.ui.colCount = obj.ui.colCount || { overview:3, credit:3, financials:3 };
     if (obj.ui.ccCardsCols == null) obj.ui.ccCardsCols = 2;
+    if (obj.ui.chartAnimMs == null) obj.ui.chartAnimMs = 300;
     obj.cardOrder = obj.cardOrder || [];
     delete obj.widgetCol; // migrate: remove legacy column tracking
 
@@ -742,7 +744,7 @@ Object.assign(WidgetRegistry, {
   let s = summedSeries('totalBalance');
   s = filterSeriesByCfg(s, cfg);
   const chart = (cfg.chartType==='bar')
-    ? barChart(s.map(p=>({label:p.date,value:p.y})),{yMin:cfg.yMin,yMax:cfg.yMax,currency:true})
+    ? barChart(s.map(p=>({label:p.date,value:p.y})),{yMin:cfg.yMin,yMax:cfg.yMax,currency:true,duration:state.ui.chartAnimMs})
     : lineChart(s,{height:160,color:cfg.color,yMin:cfg.yMin,yMax:cfg.yMax});
   return [sectionTitle('Total CC Balance Over Time'), chart];
 }},
@@ -761,8 +763,8 @@ Object.assign(WidgetRegistry, {
     return {label:c.name, issuer:c.issuer, value: Math.min(150, Math.round(util*100))};
   });
   const colors = (cfg.palette==='mono') ? utilItems.map(_=> cfg.color||'#3b82f6') : cards.map(c=>c.color||'#3b82f6');
-  const chart = (cfg.chartType==='pie') ? pieChart(utilItems,{colors})
-               : barChart(utilItems,{colors,valueSuffix:'%',yMin:cfg.yMin,yMax:cfg.yMax});
+  const chart = (cfg.chartType==='pie') ? pieChart(utilItems,{colors,duration:state.ui.chartAnimMs})
+               : barChart(utilItems,{colors,valueSuffix:'%',yMin:cfg.yMin,yMax:cfg.yMax,duration:state.ui.chartAnimMs});
   const parts=[sectionTitle('Utilization by Card (latest)'), chart];
   if (cfg.groupBy==='issuer'){
     const subs=subtotalBy(utilItems,'issuer','value');
@@ -776,8 +778,8 @@ Object.assign(WidgetRegistry, {
   const cards = filterCardsByCfg(state.cards, cfg);
   const remItems=cards.map(c=>({label:c.name, value:Number(latest[c.id]?.amountDue)||0}));
   const colors = (cfg.palette==='mono') ? remItems.map(_=> cfg.color||'#3b82f6') : cards.map(c=>c.color||'#3b82f6');
-  const chart = (cfg.chartType==='pie') ? pieChart(remItems,{colors})
-               : barChart(remItems,{colors,currency:true,yMin:cfg.yMin,yMax:cfg.yMax});
+  const chart = (cfg.chartType==='pie') ? pieChart(remItems,{colors,duration:state.ui.chartAnimMs})
+               : barChart(remItems,{colors,currency:true,yMin:cfg.yMin,yMax:cfg.yMax,duration:state.ui.chartAnimMs});
   return [sectionTitle('Remaining Statement by Card (latest)'), chart];
 })()},
   cc_dueSoon:{label:'Due Soon Timeline', size:1, build:()=> DueSoonWidget()},
@@ -797,7 +799,7 @@ Object.assign(WidgetRegistry, {
 function DueSoonWidget(){
   const latest=latestByCard(); const now=todayISO();
   const items=state.cards.map(c=>{ const last=latest[c.id]; const d=last?.dueDate? daysBetween(now,last.dueDate):null; return {label:c.name, value: d!=null? Math.max(0, 30-d):0}; });
-  return [sectionTitle('Due Soon (progress to 30 days)'), barChart(items,{valueSuffix:' d',colors:state.cards.map(c=>c.color||'#3b82f6')})];
+  return [sectionTitle('Due Soon (progress to 30 days)'), barChart(items,{valueSuffix:' d',colors:state.cards.map(c=>c.color||'#3b82f6'),duration:state.ui.chartAnimMs})];
 }
 function UtilLadderWidget(){
   const id='cc_utilLadder', cfg=getCfg(id);
@@ -841,15 +843,15 @@ function AgingBucketsWidget(){
   const latest=latestByCard(); const buckets=[{name:'0–10', val:0},{name:'11–20', val:0},{name:'21–30', val:0},{name:'>30', val:0}];
   const now=todayISO();
   state.cards.forEach(c=>{ const last=latest[c.id]; if(!last?.dueDate) return; const d=daysBetween(now,last.dueDate); if(d<=10) buckets[0].val++; else if(d<=20) buckets[1].val++; else if(d<=30) buckets[2].val++; else buckets[3].val++; });
-  return [sectionTitle('Aging Buckets (count of cards by days-to-due)'), barChart(buckets.map(b=>({label:b.name, value:b.val})),{})];
+  return [sectionTitle('Aging Buckets (count of cards by days-to-due)'), barChart(buckets.map(b=>({label:b.name, value:b.val})),{duration:state.ui.chartAnimMs})];
 }
 function ExposureIssuerWidget(){
   const id='cc_exposureIssuer', cfg=getCfg(id);
   const latest=latestByCard(); const map=new Map();
   state.cards.forEach(c=>{ const val=Number(latest[c.id]?.totalBalance)||0; map.set(c.issuer, (map.get(c.issuer)||0)+val); });
   let items=Array.from(map.entries()).map(([label,value])=>({label,value}));
-  const chart = (cfg.chartType==='pie') ? pieChart(items,{colors:items.map(_=>cfg.color||'#3b82f6')})
-               : barChart(items,{currency:true,yMin:cfg.yMin,yMax:cfg.yMax});
+  const chart = (cfg.chartType==='pie') ? pieChart(items,{colors:items.map(_=>cfg.color||'#3b82f6'),duration:state.ui.chartAnimMs})
+               : barChart(items,{currency:true,yMin:cfg.yMin,yMax:cfg.yMax,duration:state.ui.chartAnimMs});
   const by = cfg.sort?.by || 'value'; const dir = cfg.sort?.dir || 'desc';
   items = sortBy(items, by, dir);
   const table=h('table',{class:'table'}, h('thead',null,h('tr',null,
@@ -982,6 +984,13 @@ function settingsSection(){
       h('input',{id,type:'range',min:'1.3',max:'1.8',step:'0.1',
         value:String(state.ui.centerWeight||1.6),
         oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); render(); }})
+    ); })(),
+
+    // Chart animation duration
+    (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Chart animation (ms, 0=off)'),
+      h('input',{id,type:'number',min:'0',max:'2000',
+        value:String(state.ui.chartAnimMs??300),
+        oninput:e=>{ state.ui.chartAnimMs=Number(e.target.value); save(); render(); }})
     ); })(),
 
     // NEW: Full-width toggle

@@ -50,6 +50,8 @@ chart type, color palette, and more. A sample widget configuration object:
 }
 ```
 
+Chart animations are tunable via **Chart animation (ms, 0=off)** in settings. The duration controls bar and pie chart growth and is disabled automatically when the browser reports `prefers-reduced-motion`.
+
 ### Data Storage
 
 All preferences and financial data are stored in the browser's `localStorage`
