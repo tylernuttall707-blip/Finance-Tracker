@@ -848,17 +848,23 @@ function emptyNotice(){ return h('div',{class:'panel p4'}, h('div',{class:'muted
 function buildGrid(orderKey, dash, gridId){
   ensureDashOrder(dash, orderKey);
   const cols = clamp(state.ui.colCount?.[dash] || 3, 1, 6);
-  const grid=h('div',{class:'grid',id:gridId,style:{gridTemplateColumns:`repeat(${cols}, minmax(0,1fr))`}});
-  const list=(state[orderKey]||[]);
+  const grid = h('div',{class:'grid',id:gridId,style:{gridTemplateColumns:`repeat(${cols}, minmax(0,1fr))`}});
+  const list = (state[orderKey]||[]);
+  if(!list.length){
+    grid.appendChild(emptyNotice());
+    return grid;
+  }
+  const colEls = Array.from({length:cols}, (_,i)=>h('div',{class:'grid','data-col':String(i+1)}));
   for(const id of list){
     const meta=(WidgetRegistry && WidgetRegistry[id])? WidgetRegistry[id] : null;
     if(!meta) continue;
     const built = meta.build();
+    const col = clamp(state.widgetCol[id] || 1, 1, cols);
     const el = widget(id, built, state.widgetSize[id]||meta.size||1, state.widgetHeightMode[id]||'auto', {state});
-    if (state.ui.customizing===dash) addWidgetControls(el, id, orderKey, {state, save, render, configureWidget});
-    grid.appendChild(el);
+    if (state.ui.customizing===dash) addWidgetControls(el, id, orderKey, dash, {state, save, render, configureWidget});
+    colEls[col-1].appendChild(el);
   }
-  if(!grid.children.length) grid.appendChild(emptyNotice());
+  colEls.forEach(c=>grid.appendChild(c));
   setTimeout(()=> enableDrag(grid, orderKey, {state, save}), 0);
   return grid;
 }
