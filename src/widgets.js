@@ -70,6 +70,9 @@ export function enableDrag(container, orderKey, {state, save}) {
     save();
   }
   grid.querySelectorAll('[data-widget-id]').forEach(el => {
-    el.addEventListener('dragstart', onDragStart); el.addEventListener('dragover', onDragOver); el.addEventListener('drop', onDrop); el.addEventListener('dragend', onDragEnd);
+    el.addEventListener('dragstart', onDragStart);
+    el.addEventListener('dragover', onDragOver, { passive: false });
+    el.addEventListener('drop', onDrop, { passive: false });
+    el.addEventListener('dragend', onDragEnd);
   });
 }
