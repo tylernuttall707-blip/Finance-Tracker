@@ -4,10 +4,12 @@ export const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs || {})) {
+  const { passive, ...rest } = attrs || {};
+  const listenerOpts = passive === false ? { passive: false } : { passive: true };
+  for (const [k, v] of Object.entries(rest)) {
     if (k === 'class') el.className = v;
     else if (k.startsWith('on') && typeof v === 'function')
-      el.addEventListener(k.slice(2).toLowerCase(), v, { passive: true });
+      el.addEventListener(k.slice(2).toLowerCase(), v, listenerOpts);
     else if (k === 'style' && typeof v === 'object')
       el.setAttribute('style', Object.entries(v).map(([a, b]) => `${a}:${b}`).join(';'));
     else if (v !== false && v != null) el.setAttribute(k, v === true ? '' : v);
