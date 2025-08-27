@@ -21,6 +21,8 @@ jobs:
           node-version: 18
       - run: npm ci
       - run: npm run docs
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
       - if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v3
         with:
