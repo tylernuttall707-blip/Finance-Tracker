@@ -36,6 +36,10 @@ The compiled assets will be output to the `dist/` folder.
 npm test
 ```
 
+## Continuous Integration
+
+GitHub Actions runs `npm ci`, `npm test`, and `npm run build` on every push and pull request. Dependency caching speeds up repeated builds.
+
 ## Configuration
 
 Widgets and dashboard panels can be customized through the in-app settings.
