@@ -501,7 +501,7 @@ function ccCardsGridWidget(){
       const bg = card.useGradient!==false ? `linear-gradient(180deg, rgba(${r},${g},${b},${(state.ui.gradientAlpha??.06)}) 0%, rgba(${r},${g},${b},0.00) 100%)` : 'var(--panel)';
       const baseStyle = `border-color:${card.color||'#3b82f6'}; background:${bg}`;
       const overTarget = card.utilTarget!=null && util!=null ? ((util*100)>=Number(card.utilTarget)) : false;
-      const cardBox=h('div',{class:'card',style:baseStyle},
+      const cardBox=h('div',{class:'card hoverable',style:baseStyle},
         overLimit>0? h('div',{class:'badge bad'}, 'Over by '+fmtUSD(overLimit)) : (overTarget? h('div',{class:'badge warn'}, '≥ Target '+card.utilTarget+'%') : null),
         h('div',{style:'display:flex;justify-content:space-between;align-items:center;gap:8px;'},
           h('div',null, h('div',{style:'font-weight:700;font-size:16px;'}, card.name),
