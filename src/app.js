@@ -112,6 +112,17 @@ function applyThemeTokens(){
 
 /* ---------- Storage & State ---------- */
 const STORAGE_KEY='cc-finance-tracker-v27'; /* keep your data */
+const creditWidgets=['cc_cardsGrid','cc_kpis','cc_line','cc_availLine','cc_remainLine','cc_bar','cc_remainBar','cc_dueSoon','cc_utilLadder','cc_changedToday','cc_payCalendar','cc_agingBuckets','cc_exposureIssuer'];
+const financialWidgets=['fin_kpis','fin_cashLine','fin_debtLine','fin_netLine','fin_upcoming'];
+function availableForDashboard(d){
+  if(d==='overview'){
+    const union=Array.from(new Set([...creditWidgets, ...financialWidgets]));
+    return ['ov_finKpis','ov_ccLine','ov_netLine', ...union];
+  }
+  if(d==='credit') return creditWidgets.slice();
+  if(d==='financials') return financialWidgets.slice();
+  return [];
+}
 export let state = load() || seed();
 function seed(){
   const c1={id:uid(),name:'Company Visa (Chase)',issuer:'Chase',limit:25000,apr:18.99,fixedDueDay:12,fixedCloseDay:15,color:'#3b82f6',utilTarget:30,useGradient:true};
@@ -129,12 +140,12 @@ function seed(){
     // NEW:
     fullWidth:false,
     contentMaxPx:2200,
-    colCount:{overview:3, credit:3, financials:3},
+   colCount:{overview:3, credit:3, financials:3},
     ccCardsCols:2
     },
    cards:[c1], entries:[], selectedCardId:c1.id,
    finAccounts:[a1,l1], finEntries:[], finExpenses:[],
-   order_overview:['ov_finKpis','ov_ccLine','ov_netLine'],
+   order_overview: availableForDashboard('overview').slice(),
    order_cc:['cc_cardsGrid','cc_kpis','cc_line','cc_availLine','cc_remainLine','cc_bar','cc_remainBar','cc_dueSoon','cc_utilLadder','cc_changedToday','cc_payCalendar','cc_agingBuckets','cc_exposureIssuer'],
    order_fin:['fin_kpis','fin_cashLine','fin_debtLine','fin_netLine','fin_upcoming'],
    widgetSize:{}, widgetHeightMode:{}, widgetFixedH:{},
@@ -165,6 +176,8 @@ export function load(){
     if (obj.ui.chartAnimMs == null) obj.ui.chartAnimMs = 300;
     obj.cardOrder = obj.cardOrder || [];
     delete obj.widgetCol; // migrate: remove legacy column tracking
+
+    if (!obj.order_overview.length) obj.order_overview = availableForDashboard('overview').slice();
 
     return obj;
   }catch(e){
@@ -478,12 +491,6 @@ function safeSection(title, builder, repair){
         h('button',{class:'btn tiny',onclick:()=>{ repair&&repair(); }}, 'Repair '+title))
     );
   }
-}
-function availableForDashboard(d){
-  if(d==='overview') return ['ov_finKpis','ov_ccLine','ov_netLine'];
-  if(d==='credit') return ['cc_cardsGrid','cc_kpis','cc_line','cc_availLine','cc_remainLine','cc_bar','cc_remainBar','cc_dueSoon','cc_utilLadder','cc_changedToday','cc_payCalendar','cc_agingBuckets','cc_exposureIssuer'];
-  if(d==='financials') return ['fin_kpis','fin_cashLine','fin_debtLine','fin_netLine','fin_upcoming'];
-  return [];
 }
 
 /* ----- Credit Cards widgets & pages ----- */
