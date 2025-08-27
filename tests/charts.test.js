@@ -44,7 +44,7 @@ function loadModule(rel){
   const source = fs.readFileSync(abs,'utf8');
   const {code} = esbuild.transformSync(source,{loader:'js',format:'cjs',sourcefile:abs});
   const module = {exports:{}};
-  const context = {module,exports:module.exports,require:p=>p.startsWith('.')?loadModule(path.join(path.dirname(abs),p)):require(p),window,document,localStorage,requestAnimationFrame};
+  const context = {module,exports:module.exports,require:p=>p.startsWith('.')?loadModule(path.join(path.dirname(abs),p)):require(p),window,document,localStorage,requestAnimationFrame:global.requestAnimationFrame,setTimeout:global.setTimeout,Date:Date};
   vm.runInNewContext(code, context);
   cache.set(abs,module.exports);
   return module.exports;
@@ -79,21 +79,56 @@ describe('chart animations', () => {
     expect(/A 90 90 0 0 1 20(?:\.0+)? 110/.test(d)).toBe(true);
   });
 
-  test('barChart applies easing function', () => {
-    const origRAF = global.requestAnimationFrame;
-    const origNow = Date.now;
-    Date.now = () => 0;
-    let called = false;
-    global.requestAnimationFrame = fn => { if(!called){ called = true; fn(); } };
-    cache.delete(path.resolve(__dirname,'..','src/charts.js'));
-    const {barChart} = loadModule('src/charts.js');
-    const easing = jest.fn().mockReturnValue(0.25);
-    const g = barChart([{label:'A',value:10}],{duration:100,easing});
-    const rect = g.children[0];
-    expect(easing.mock.calls[0][0]).toBeCloseTo(0,2);
-    expect(rect.attributes.height).toBe('36');
-    expect(rect.attributes.y).toBe('136');
-    global.requestAnimationFrame = origRAF;
-    Date.now = origNow;
+    test('barChart applies easing function', () => {
+      const origRAF = global.requestAnimationFrame;
+      const origNow = Date.now;
+      Date.now = () => 0;
+      let called = false;
+      global.requestAnimationFrame = fn => { if(!called){ called = true; fn(); } };
+      cache.delete(path.resolve(__dirname,'..','src/charts.js'));
+      const {barChart} = loadModule('src/charts.js');
+      const easing = jest.fn().mockReturnValue(0.25);
+      const g = barChart([{label:'A',value:10}],{duration:100,easing});
+      const rect = g.children[0];
+      expect(easing.mock.calls[0][0]).toBeCloseTo(0,1);
+      expect(rect.attributes.height).toBe('36');
+      expect(rect.attributes.y).toBe('136');
+      global.requestAnimationFrame = origRAF;
+      Date.now = origNow;
+    });
+
+    test('barChart renders without requestAnimationFrame', () => {
+      const origRAF = global.requestAnimationFrame;
+      const origTimeout = global.setTimeout;
+      const origNow = Date.now;
+      delete global.requestAnimationFrame;
+      Date.now = () => 0;
+      global.setTimeout = fn => { Date.now = () => 1000; fn(); };
+      cache.delete(path.resolve(__dirname,'..','src/charts.js'));
+      const {barChart} = loadModule('src/charts.js');
+      const g = barChart([{label:'A',value:10}],{duration:100});
+      const rect = g.children[0];
+      expect(rect.attributes.height).toBe('144');
+      expect(rect.attributes.y).toBe('28');
+      global.setTimeout = origTimeout;
+      Date.now = origNow;
+      global.requestAnimationFrame = origRAF;
+    });
+
+    test('pieChart renders without requestAnimationFrame', () => {
+      const origRAF = global.requestAnimationFrame;
+      const origTimeout = global.setTimeout;
+      const origNow = Date.now;
+      delete global.requestAnimationFrame;
+      Date.now = () => 0;
+      global.setTimeout = fn => { Date.now = () => 1000; fn(); };
+      cache.delete(path.resolve(__dirname,'..','src/charts.js'));
+      const {pieChart} = loadModule('src/charts.js');
+      const g = pieChart([{label:'A',value:1},{label:'B',value:1}],{duration:100});
+      const d = g.children[0].attributes.d;
+      expect(/A 90 90 0 0 1 20(?:\.0+)? 110/.test(d)).toBe(true);
+      global.setTimeout = origTimeout;
+      Date.now = origNow;
+      global.requestAnimationFrame = origRAF;
+    });
   });
-});

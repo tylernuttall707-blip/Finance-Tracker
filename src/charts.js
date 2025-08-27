@@ -1,6 +1,8 @@
 import {h} from './dom-utils.js';
 import {easeOutCubic} from './easing.js';
 
+const raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame : fn => setTimeout(fn, 16);
+
 export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null,duration=300,easing=easeOutCubic}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
   const W=720,H=200,P=28,G=12,N=items.length,BAR=(W-P*2-(N-1)*G)/Math.max(1,N);
@@ -40,9 +42,9 @@ export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=nul
         b.rect.setAttribute('y',baseY-h);
         b.top.setAttribute('y',baseY-h-4);
       });
-      if(t<1) requestAnimationFrame(frame);
+      if(t<1) raf(frame);
     }
-    requestAnimationFrame(frame);
+    raf(frame);
   }
   return g;
 }
@@ -81,9 +83,9 @@ export function pieChart(items,{colors=[],duration=300,easing=easeOutCubic}={}){
         const d=`M ${CX} ${CY} L ${x0} ${y0} A ${R} ${R} 0 ${large} 1 ${x1} ${y1} Z`;
         s.path.setAttribute('d',d);
       });
-      if(t<1) requestAnimationFrame(frame);
+      if(t<1) raf(frame);
     }
-    requestAnimationFrame(frame);
+    raf(frame);
   }
   return g;
 }
