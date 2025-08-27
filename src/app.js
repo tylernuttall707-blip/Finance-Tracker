@@ -907,7 +907,7 @@ function ChangedTodayWidget(cfg){
     return h('tr',null, h('td',null,c?.name||'—'), h('td',null, fmtUSD(d('totalBalance'))), h('td',null, fmtUSD(d('amountDue'))), h('td',null, fmtUSD(d('availableCredit'))));
   })))];
 }
-function PayCalendarWidget(cfg){
+export function PayCalendarWidget(cfg){
   const latest=latestByCard();
   const start=new Date();
   start.setDate(start.getDate()-start.getDay());
