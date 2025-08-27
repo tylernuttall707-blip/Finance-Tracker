@@ -1,5 +1,4 @@
-import {h, clamp} from './dom-utils.js';
-const uid = () => globalThis.crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36);
+import {h, clamp, uid} from './dom-utils.js';
 export function widget(id, content, size, heightMode, {state}) {
   const el = h('section', {
     class: 'panel p4 drag',

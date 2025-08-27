@@ -44,7 +44,7 @@ function loadModule(rel){
   const source = fs.readFileSync(abs,'utf8');
   const {code} = esbuild.transformSync(source,{loader:'js',format:'cjs',sourcefile:abs});
   const module = {exports:{}};
-  const context = {module,exports:module.exports,require:p=>p.startsWith('.')?loadModule(path.join(path.dirname(abs),p)):require(p),window,document,localStorage,requestAnimationFrame};
+  const context = {module,exports:module.exports,require:p=>p.startsWith('.')?loadModule(path.join(path.dirname(abs),p)):require(p),window,document,localStorage,requestAnimationFrame,Date};
   vm.runInNewContext(code, context);
   cache.set(abs,module.exports);
   return module.exports;
