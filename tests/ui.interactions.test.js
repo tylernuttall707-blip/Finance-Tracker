@@ -191,6 +191,21 @@ describe('enableDrag', () => {
   });
 });
 
+describe('PayCalendarWidget', () => {
+  test('starts on Sunday and highlights today', () => {
+    const {PayCalendarWidget, todayISO} = loadModule('src/app.js');
+    const [wrap] = PayCalendarWidget();
+    const grid = wrap.lastChild;
+    const cells = grid.children.filter(c=>c.classList.contains('cell'));
+    const firstDateCell = cells.find(c=>c.children[0]);
+    expect(new Date(firstDateCell.children[0].textContent).getDay()).toBe(0);
+    const today = todayISO();
+    const todayCell = cells.find(c=>c.children[0] && c.children[0].textContent === today);
+    expect(todayCell).toBeDefined();
+    expect(todayCell.classList.contains('today')).toBe(true);
+  });
+});
+
 describe('applyThemeTokens', () => {
   test('updates CSS variables for light and dark modes', () => {
     const {state, applyThemeTokens} = loadModule('src/app.js');

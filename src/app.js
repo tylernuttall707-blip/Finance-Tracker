@@ -898,12 +898,30 @@ function ChangedTodayWidget(){
   })))];
 }
 function PayCalendarWidget(){
-  const latest=latestByCard(); const now=new Date(); const dates=[]; for(let i=0;i<28;i++){ const d=new Date(now); d.setDate(now.getDate()+i); dates.push(d.toISOString().slice(0,10)); }
+  const latest=latestByCard();
+  const start=new Date();
+  start.setDate(start.getDate()-start.getDay());
+  const dates=[];
+  for(let i=0;i<28;i++){
+    const d=new Date(start);
+    d.setDate(start.getDate()+i);
+    dates.push(d.toISOString().slice(0,10));
+  }
   const wrap=h('div',null, sectionTitle('Payment Calendar (next 4 weeks)'), h('div',{class:'cal'}));
-  const grid=wrap.lastChild; grid.appendChild(h('div',{class:'dow'},'Sun'));grid.appendChild(h('div',{class:'dow'},'Mon'));grid.appendChild(h('div',{class:'dow'},'Tue'));grid.appendChild(h('div',{class:'dow'},'Wed'));grid.appendChild(h('div',{class:'dow'},'Thu'));grid.appendChild(h('div',{class:'dow'},'Fri'));grid.appendChild(h('div',{class:'dow'},'Sat'));
+  const grid=wrap.lastChild;
+  grid.appendChild(h('div',{class:'dow'},'Sun'));
+  grid.appendChild(h('div',{class:'dow'},'Mon'));
+  grid.appendChild(h('div',{class:'dow'},'Tue'));
+  grid.appendChild(h('div',{class:'dow'},'Wed'));
+  grid.appendChild(h('div',{class:'dow'},'Thu'));
+  grid.appendChild(h('div',{class:'dow'},'Fri'));
+  grid.appendChild(h('div',{class:'dow'},'Sat'));
+  const offset=start.getDay();
+  for(let i=0;i<offset;i++) grid.appendChild(h('div',{class:'cell'}));
+  const today=todayISO();
   dates.forEach(d=>{
-    const box=h('div',{class:'cell'}, h('div',{class:'muted'}, d));
-    state.cards.forEach(c=>{ const last=latest[c.id]; if(last?.dueDate===d){ const dot=h('span',{class:'dot',style:'background:'+ (c.color||'#3b82f6')}); box.appendChild(h('div',null, dot, ' ', c.name)); } });
+    const box=h('div',{class:'cell'+(d===today?' today':'')}, h('div',{class:'muted'}, d));
+    state.cards.forEach(c=>{ const last=latest[c.id]; if(last?.dueDate===d){ const dot=h('span',{class:'dot',style:'background:'+(c.color||'#3b82f6')}); box.appendChild(h('div',null, dot, ' ', c.name)); } });
     grid.appendChild(box);
   });
   return [wrap];
