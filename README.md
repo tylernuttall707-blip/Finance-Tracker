@@ -36,6 +36,14 @@ The compiled assets will be output to the `dist/` folder.
 npm test
 ```
 
+## Documentation
+
+```bash
+npm run docs
+```
+
+Open `docs/index.html` in your browser to preview the generated API docs.
+
 ## Configuration
 
 Widgets and dashboard panels can be customized through the in-app settings.
