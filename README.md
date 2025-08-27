@@ -46,13 +46,14 @@ Open `docs/index.html` in your browser to preview the generated API docs.
 
 ## Configuration
 
-Widgets and dashboard panels can be customized through the in-app settings.
+Widgets and dashboard panels can be customized through the in-app settings. Widget titles are editable—leave blank to use the default label.
 Dashboard column counts are adjustable in Customize mode via a slider (1–6 columns per dashboard).
 Options include size (1–3 columns), height mode (auto, short, medium, tall, or fixed pixels),
 chart type, color palette, and more. A sample widget configuration object:
 
 ```javascript
 {
+  title: 'Custom Title',
   chartType: 'bar',
   color: '#3b82f6',
   size: 2

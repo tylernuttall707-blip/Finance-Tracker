@@ -254,6 +254,27 @@ describe('availableForDashboard', () => {
   });
 });
 
+describe('widget title configuration', () => {
+  test('updates widget title after configureWidget', () => {
+    const {state, render, configureWidget} = loadModule('src/app.js');
+    const root = document.createElement('div');
+    root.id = 'app';
+    document.body.appendChild(root);
+    state.section = 'overview';
+    render();
+    expect(document.querySelector('[data-widget-id="ov_finKpis"] .title').textContent)
+      .toBe('Financial KPIs');
+    configureWidget('ov_finKpis');
+    const scrim = document.body.lastChild;
+    const input = scrim.querySelector('input[type="text"]');
+    input.value = 'My KPIs';
+    input.dispatchEvent({type:'input'});
+    scrim.querySelector('button.primary').dispatchEvent({type:'click'});
+    expect(document.querySelector('[data-widget-id="ov_finKpis"] .title').textContent)
+      .toBe('My KPIs');
+  });
+});
+
 describe('input sanitization', () => {
   test('currencyInput strips invalid chars and passes numbers', () => {
     const {currencyInput} = loadModule('src/app.js');
