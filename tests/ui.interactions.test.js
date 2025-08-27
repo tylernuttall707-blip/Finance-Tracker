@@ -103,6 +103,7 @@ function loadModule(relPath){
     finalCode += '\nmodule.exports.applyThemeTokens = applyThemeTokens;';
     finalCode += '\nmodule.exports.currencyInput = currencyInput;';
     finalCode += '\nmodule.exports.percentInput = percentInput;';
+    finalCode += '\nmodule.exports.availableForDashboard = availableForDashboard;';
   }
   const module = {exports:{}};
   const dirname = path.dirname(absPath);
@@ -208,6 +209,15 @@ describe('applyThemeTokens', () => {
       .toBe('linear-gradient(180deg,#0F172A,#1E293B)');
     expect(document.documentElement.style.getPropertyValue('--text'))
       .toBe('#F1F5F9');
+  });
+});
+
+describe('availableForDashboard', () => {
+  test('overview includes credit and financial widgets', () => {
+    const {availableForDashboard} = loadModule('src/app.js');
+    const list = availableForDashboard('overview');
+    expect(list.some(id=>id.startsWith('cc_'))).toBe(true);
+    expect(list.some(id=>id.startsWith('fin_'))).toBe(true);
   });
 });
 
