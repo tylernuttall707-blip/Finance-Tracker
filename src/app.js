@@ -296,7 +296,7 @@ function currencyInput(value,onChange,label){
   const f=h('div',{class:'field'}, label?h('label',{for:id},label):null,
     h('div',{style:'position:relative;'},
       h('span',{style:'position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'$'),
-      h('input',{id,type:'text',value:value==null?'':String(value),style:'padding-left:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');onChange(raw===''?null:raw);},onfocus:e=>{e.target.value=e.target.value.replace(/,/g,'');},onblur:e=>{const n=asNumber(e.target.value);e.target.value=(n==null?'':Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));onChange(n);}})
+      h('input',{id,type:'text',value:value==null?'':String(value),style:'padding-left:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\\-]/g,'');e.target.value=raw;onChange(raw===''?null:Number(raw));},onfocus:e=>{e.target.value=e.target.value.replace(/,/g,'');},onblur:e=>{const n=asNumber(e.target.value);e.target.value=(n==null?'':Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));onChange(n);}})
     )
   );
   return f;
@@ -305,7 +305,7 @@ function percentInput(value,onChange,label){
   const id=uid();
   const f=h('div',{class:'field'}, label?h('label',{for:id},label):null,
     h('div',{style:'position:relative;'},
-      h('input',{id,type:'text',value:value==null?'':String(value),style:'padding-right:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\-]/g,'');onChange(raw);},onblur:e=>{const n=Number(e.target.value);e.target.value=isFinite(n)?n.toFixed(2):'';onChange(e.target.value);}}),
+      h('input',{id,type:'text',value:value==null?'':String(value),style:'padding-right:22px;',oninput:e=>{const raw=e.target.value.replace(/[^0-9.\-]/g,'');e.target.value=raw;onChange(raw===''?null:Number(raw));},onblur:e=>{const n=Number(e.target.value);e.target.value=isFinite(n)?n.toFixed(2):'';onChange(isFinite(n)?n:null);}}),
       h('span',{style:'position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);'},'%')
     )
   );
@@ -559,7 +559,7 @@ function ccCards(){
           )
         ); })(),
         (function(){ const w=h('div'); w.appendChild(currencyInput(card.limit==null?'':card.limit, v=>{card.limit=asNumber(v); save();}, 'Credit Limit')); return w; })(),
-        (function(){ const w=h('div'); w.appendChild(percentInput(card.apr==null?'':card.apr, v=>{card.apr=v===''?null:Number(v); save();}, 'APR %')); return w; })(),
+        (function(){ const w=h('div'); w.appendChild(percentInput(card.apr==null?'':card.apr, v=>{card.apr=v; save();}, 'APR %')); return w; })(),
         colorPickerField('Card Color', card.color||'#3b82f6', hex=>{ card.color=hex; save(); }),
         fieldInput('Utilization Target %', card.utilTarget??'', v=>{card.utilTarget=v===''?null:Number(v); save();}),
         (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Use Gradient?'),
@@ -697,7 +697,7 @@ function finAccounts(){
         fieldInput(a.type==='bank'?'Bank':'Lender', a.bank||'', v=>{a.bank=v; save();}),
         fieldInput('Identifier', a.number||'', v=>{a.number=v; save();}),
         colorPickerField('Color', a.color||'#14b8a6', hex=>{ a.color=hex; save(); }),
-        ...(a.type==='loan'? [percentInput(a.apr==null?'':a.apr, v=>{a.apr=v===''?null:Number(v); save();}, 'APR %')] : [])
+        ...(a.type==='loan'? [percentInput(a.apr==null?'':a.apr, v=>{a.apr=v; save();}, 'APR %')] : [])
       ),
       h('div',{style:'display:flex;justify-content:flex-end;gap:8px;'},
         h('button',{class:'btn tiny',onclick:()=>{ if(confirm('Delete this account and its entries?')){ state.finAccounts=state.finAccounts.filter(x=>x.id!==a.id); state.finEntries=state.finEntries.filter(e=>e.accountId!==a.id); state.finExpenses=state.finExpenses.filter(x=>x.accountId!==a.id); bump('finAccounts'); bump('finEntries'); save(); render(); } }}, 'Delete')
