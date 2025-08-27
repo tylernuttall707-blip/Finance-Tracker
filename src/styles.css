@@ -62,7 +62,7 @@ h1 { font-size: 20px; margin: 0; font-weight: 800 }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff }
 .btn.tiny { padding: 6px 8px; border-radius: 10px; font-size: 12px }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); transition: background .15s, box-shadow .15s }
-.panel:hover { background: var(--panel-2); box-shadow: var(--shadow-hover) }
+.panel.hoverable:hover { background: var(--panel-2); box-shadow: var(--shadow-hover) }
 .p4 { padding: 14px }
 .grid { display: grid; gap: 14px; grid-auto-flow: dense; grid-auto-rows: minmax(0, max-content) }
 .grid-3 { grid-template-columns: var(--cols-3) }
@@ -83,7 +83,7 @@ h1 { font-size: 20px; margin: 0; font-weight: 800 }
 .drag.dragging { opacity: .6 }
 .placeholder { border: 2px dashed var(--border); border-radius: var(--radius); min-height: 80px }
 .card { position: relative; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; background: var(--panel); box-shadow: var(--shadow); transition: transform .12s, background .15s, box-shadow .15s }
-.card:hover { transform: translateY(-1px); background: var(--panel-2); box-shadow: var(--shadow-hover) }
+.card.hoverable:hover { transform: translateY(-1px); background: var(--panel-2); box-shadow: var(--shadow-hover) }
 .badge { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 4px 8px; border-radius: 999px }
 .warn { background: #FFF3D6; color: #A66B00 }
 .bad { background: #FDE2E2; color: #B42318 }
