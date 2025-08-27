@@ -15,22 +15,68 @@ function createStyle(){
     set(target, prop, value){ store[prop]=value; return true; }
   });
 }
-class Element {
-  constructor(tag){ this.tagName=tag; this.children=[]; this.attributes={}; this.style=createStyle(); this.eventListeners={}; this.parentNode=null; this.className=''; }
-  setAttribute(k,v){ this.attributes[k]=String(v); if(k==='class') this.className=String(v); }
-  appendChild(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.push(child); return child; }
-  prepend(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.unshift(child); return child; }
-  addEventListener(type,handler){ (this.eventListeners[type]=this.eventListeners[type]||[]).push(handler); }
-  dispatchEvent(evt){ evt.target=this; (this.eventListeners[evt.type]||[]).forEach(fn=>fn(evt)); }
-  remove(){ if(this.parentNode){ const i=this.parentNode.children.indexOf(this); if(i>=0) this.parentNode.children.splice(i,1); }}
-  get firstChild(){ return this.children[0] || null; }
-  get lastChild(){ return this.children[this.children.length-1] || null; }
-  get textContent(){ return this.children.map(c=>c.nodeType===3?c.textContent:c.textContent).join(''); }
-}
+  class Element {
+    constructor(tag){
+      this.tagName=tag; this.children=[]; this.attributes={}; this.style=createStyle();
+      this.eventListeners={}; this.parentNode=null; this.className='';
+      this.classList={
+        add:(...cls)=>{ cls.forEach(c=>{ if(!this.className.split(' ').includes(c)) this.className+=(this.className?' ':'')+c; }); },
+        remove:(...cls)=>{ this.className=this.className.split(' ').filter(x=>!cls.includes(x)).join(' '); },
+        contains:(c)=>this.className.split(' ').includes(c)
+      };
+    }
+    setAttribute(k,v){ this.attributes[k]=String(v); if(k==='class') this.className=String(v); }
+    getAttribute(k){ return this.attributes[k]; }
+    appendChild(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.push(child); return child; }
+    prepend(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.unshift(child); return child; }
+    addEventListener(type,handler){ (this.eventListeners[type]=this.eventListeners[type]||[]).push(handler); }
+    removeEventListener(type,handler){ const arr=this.eventListeners[type]; if(!arr) return; const i=arr.indexOf(handler); if(i>=0) arr.splice(i,1); if(arr.length===0) delete this.eventListeners[type]; }
+    dispatchEvent(evt){ evt.target=evt.target||this; (this.eventListeners[evt.type]||[]).slice().forEach(fn=>fn(evt)); if(evt.bubbles&&this.parentNode) this.parentNode.dispatchEvent(evt); }
+    after(node){
+      if(!this.parentNode) return;
+      const p=this.parentNode;
+      if(node.parentNode){ const j=node.parentNode.children.indexOf(node); if(j>=0) node.parentNode.children.splice(j,1); }
+      const i=p.children.indexOf(this);
+      node.parentNode=p;
+      p.children.splice(i+1,0,node);
+    }
+    insertBefore(node,ref){
+      if(node.parentNode){ const j=node.parentNode.children.indexOf(node); if(j>=0) node.parentNode.children.splice(j,1); }
+      const i=this.children.indexOf(ref);
+      node.parentNode=this;
+      if(i<0) this.children.push(node); else this.children.splice(i,0,node);
+    }
+    replaceWith(node){
+      if(!this.parentNode) return;
+      const p=this.parentNode;
+      if(node.parentNode){ const j=node.parentNode.children.indexOf(node); if(j>=0) node.parentNode.children.splice(j,1); }
+      const i=p.children.indexOf(this);
+      if(i>=0){ node.parentNode=p; p.children[i]=node; }
+      this.parentNode=null;
+    }
+    remove(){ if(this.parentNode){ const i=this.parentNode.children.indexOf(this); if(i>=0) this.parentNode.children.splice(i,1); this.parentNode=null; }}
+    get firstChild(){ return this.children[0] || null; }
+    get lastChild(){ return this.children[this.children.length-1] || null; }
+    get textContent(){ return this.children.map(c=>c.nodeType===3?c.textContent:c.textContent).join(''); }
+    getBoundingClientRect(){ return this.__rect || {top:0,height:0}; }
+    closest(sel){ if(sel==='[data-widget-id]'){ let el=this; while(el){ if(el.attributes['data-widget-id']) return el; el=el.parentNode; } return null; } return null; }
+    contains(node){ let el=node; while(el){ if(el===this) return true; el=el.parentNode; } return false; }
+    querySelectorAll(sel){ const res=[]; const walk=n=>{ if(!(n instanceof Element)) return; if(sel==='[data-widget-id]'&&n.attributes['data-widget-id']) res.push(n); n.children.forEach(walk); }; walk(this); return res; }
+  }
 class Document {
   constructor(){ this.documentElement=new Element('html'); this.body=new Element('body'); this.documentElement.appendChild(this.body); }
   createElement(tag){ return new Element(tag); }
   createTextNode(text){ return new TextNode(text); }
+  getElementById(id){
+    let found=null;
+    const search=node=>{
+      if(!(node instanceof Element)||found) return;
+      if(node.attributes.id===id) { found=node; return; }
+      node.children.forEach(search);
+    };
+    search(this.body);
+    return found;
+  }
 }
 const document = new Document();
 const window = { document, addEventListener: () => {}, removeEventListener: () => {} };
@@ -107,6 +153,38 @@ describe('addWidgetControls', () => {
     removeBtn.dispatchEvent({type:'click'});
     expect(state.order).toEqual([]);
     expect(render).toHaveBeenCalled();
+  });
+});
+
+describe('enableDrag', () => {
+  test('drags dynamically added widgets and cleans up', () => {
+    const {enableDrag} = loadModule('src/widgets.js');
+    const state = {order:['a','b']};
+    const save = jest.fn();
+    const grid = document.createElement('div');
+    const w1 = document.createElement('section');
+    w1.setAttribute('data-widget-id','a');
+    w1.__rect={top:0,height:100};
+    grid.appendChild(w1);
+    const w2 = document.createElement('section');
+    w2.setAttribute('data-widget-id','b');
+    w2.__rect={top:100,height:100};
+    grid.appendChild(w2);
+    const cleanup = enableDrag(grid,'order',{state,save});
+    expect(w1.eventListeners.dragstart).toBeUndefined();
+    const w3 = document.createElement('section');
+    w3.setAttribute('data-widget-id','c');
+    w3.__rect={top:200,height:100};
+    grid.appendChild(w3);
+    w3.dispatchEvent({type:'dragstart', dataTransfer:{}, bubbles:true});
+    w1.dispatchEvent({type:'dragover', clientY:0, preventDefault:()=>{}, bubbles:true});
+    grid.dispatchEvent({type:'drop', preventDefault:()=>{}, bubbles:true});
+    expect(state.order).toEqual(['c','a','b']);
+    expect(save).toHaveBeenCalled();
+    w3.remove();
+    expect(w3.eventListeners.dragstart).toBeUndefined();
+    cleanup();
+    expect(grid.eventListeners.dragstart).toBeUndefined();
   });
 });
 
