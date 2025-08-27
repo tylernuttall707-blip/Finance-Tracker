@@ -1,15 +1,15 @@
 :root {
-  --bg: linear-gradient(180deg, #F5F6FA, #E6E9F2);
-  --panel: linear-gradient(180deg, #FFFFFF, #ECEFF5);
-  --panel-2: #E4E7EF;
-  --border: #CBD5E1;
-  --text: #0A0F1F;
-  --muted: #4B5565;
-  --muted-2: #646E83;
-  --accent: #1E40AF;
-  --ring: #93C5FD;
-  --shadow: 0 0 0 1px rgba(16,24,40,.04), 0 2px 4px rgba(16,24,40,.08), 0 12px 20px rgba(16,24,40,.08);
-  --shadow-hover: 0 0 0 1px rgba(16,24,40,.06), 0 4px 8px rgba(16,24,40,.1), 0 16px 24px rgba(16,24,40,.1);
+  --bg: linear-gradient(180deg, #F8FAFC, #E2E8F0);
+  --panel: linear-gradient(180deg, #FFFFFF, #E5E9F2);
+  --panel-2: #E2E8F0;
+  --border: #94A3B8;
+  --text: #0F172A;
+  --muted: #475569;
+  --muted-2: #64748B;
+  --accent: #1D4ED8;
+  --ring: #60A5FA;
+  --shadow: 0 0 0 1px rgba(0,0,0,.05), 0 4px 8px rgba(0,0,0,.06), 0 14px 28px rgba(0,0,0,.06);
+  --shadow-hover: 0 0 0 1px rgba(0,0,0,.06), 0 4px 8px rgba(0,0,0,.08), 0 16px 32px rgba(0,0,0,.1);
   --radius: 16px;
   --cols-3: 1fr 1.6fr 1fr;
   --gradient-alpha: .06;

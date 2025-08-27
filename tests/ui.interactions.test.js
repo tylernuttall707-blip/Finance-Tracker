@@ -109,3 +109,24 @@ describe('addWidgetControls', () => {
     expect(render).toHaveBeenCalled();
   });
 });
+
+describe('applyThemeTokens', () => {
+  test('updates CSS variables for light and dark modes', () => {
+    const {state, applyThemeTokens} = loadModule('src/app.js');
+    state.theme = 'light';
+    state.themeLightPreset = 'cloud';
+    applyThemeTokens();
+    expect(document.documentElement.style.getPropertyValue('--bg'))
+      .toBe('linear-gradient(180deg,#F8FAFC,#E2E8F0)');
+    expect(document.documentElement.style.getPropertyValue('--text'))
+      .toBe('#0F172A');
+
+    state.theme = 'dark';
+    state.themeDarkPreset = 'obsidian';
+    applyThemeTokens();
+    expect(document.documentElement.style.getPropertyValue('--bg'))
+      .toBe('linear-gradient(180deg,#0F172A,#1E293B)');
+    expect(document.documentElement.style.getPropertyValue('--text'))
+      .toBe('#F1F5F9');
+  });
+});

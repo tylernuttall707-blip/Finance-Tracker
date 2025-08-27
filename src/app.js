@@ -34,53 +34,53 @@ window.addEventListener('unhandledrejection', e=>{ console.error(e.reason); show
 const ThemePresets = {
   light: {
     cloud: {
-      bg: 'linear-gradient(180deg,#F9FAFB,#F1F3F9)',
-      panel: 'linear-gradient(180deg,#FFFFFF,#F6F8FB)',
-      panel2: '#F3F5F9',
-      border: '#E3E8EF',
-      text: '#0B1220',
-      muted: '#5B6474',
-      muted2: '#7A8596',
-      accent: '#2563EB',
-      ring: '#93C5FD',
-      shadow: '0 0 0 1px rgba(16,24,40,.04), 0 2px 4px rgba(16,24,40,.08), 0 12px 20px rgba(16,24,40,.08)'
+      bg: 'linear-gradient(180deg,#F8FAFC,#E2E8F0)',
+      panel: 'linear-gradient(180deg,#FFFFFF,#E5E9F2)',
+      panel2: '#E2E8F0',
+      border: '#94A3B8',
+      text: '#0F172A',
+      muted: '#475569',
+      muted2: '#64748B',
+      accent: '#1D4ED8',
+      ring: '#60A5FA',
+      shadow: '0 0 0 1px rgba(0,0,0,.05), 0 4px 8px rgba(0,0,0,.06), 0 14px 28px rgba(0,0,0,.06)'
     },
     cloudContrast: {
-      bg: 'linear-gradient(180deg,#EEF2F7,#E2E8F0)',
-      panel: 'linear-gradient(180deg,#FFFFFF,#F1F5F9)',
-      panel2: '#EEF1F6',
-      border: '#D9E0EA',
+      bg: 'linear-gradient(180deg,#EEF2F6,#E2E8F0)',
+      panel: 'linear-gradient(180deg,#FFFFFF,#E2E8F0)',
+      panel2: '#CBD5E1',
+      border: '#64748B',
       text: '#0A0F1A',
-      muted: '#4D5461',
-      muted2: '#6B7280',
-      accent: '#1D4ED8',
-      ring: '#93C5FD',
-      shadow: '0 0 0 1px rgba(10,15,26,.05), 0 2px 6px rgba(10,15,26,.08), 0 14px 24px rgba(10,15,26,.1)'
+      muted: '#374151',
+      muted2: '#4B5563',
+      accent: '#1E40AF',
+      ring: '#3B82F6',
+      shadow: '0 0 0 1px rgba(0,0,0,.06), 0 4px 8px rgba(0,0,0,.1), 0 18px 32px rgba(0,0,0,.12)'
     }
   },
   dark: {
     obsidian: {
-      bg: 'linear-gradient(180deg,#0D1117,#141A23)',
-      panel: 'linear-gradient(180deg,#111827,#1A2333)',
-      panel2: '#0F172A',
-      border: '#263040',
-      text: '#E6EDF3',
-      muted: '#9BA7B4',
-      muted2: '#7E8B98',
-      accent: '#3366FF',
-      ring: '#3366FF',
-      shadow: '0 0 0 1px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.4), 0 16px 32px rgba(0,0,0,.5)'
+      bg: 'linear-gradient(180deg,#0F172A,#1E293B)',
+      panel: 'linear-gradient(180deg,#1E293B,#334155)',
+      panel2: '#1E293B',
+      border: '#475569',
+      text: '#F1F5F9',
+      muted: '#94A3B8',
+      muted2: '#64748B',
+      accent: '#3B82F6',
+      ring: '#3B82F6',
+      shadow: '0 0 0 1px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.5), 0 16px 32px rgba(0,0,0,.6)'
     },
     nightBlue: {
-      bg: 'linear-gradient(180deg,#0B1220,#132035)',
-      panel: 'linear-gradient(180deg,#0F172A,#18233B)',
-      panel2: '#101A2E',
-      border: '#1E293B',
-      text: '#E4EAF2',
-      muted: '#A5B1C0',
-      muted2: '#8894A3',
-      accent: '#2B6DE9',
-      ring: '#2B6DE9',
+      bg: 'linear-gradient(180deg,#0B1120,#182235)',
+      panel: 'linear-gradient(180deg,#152033,#1E293B)',
+      panel2: '#152033',
+      border: '#2D3A4E',
+      text: '#E2E8F0',
+      muted: '#9CA3AF',
+      muted2: '#6B7280',
+      accent: '#60A5FA',
+      ring: '#60A5FA',
       shadow: '0 0 0 1px rgba(0,0,0,.55), 0 4px 8px rgba(0,0,0,.45), 0 18px 36px rgba(0,0,0,.5)'
     }
   }
