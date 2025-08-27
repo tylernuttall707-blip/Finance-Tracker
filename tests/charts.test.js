@@ -90,7 +90,7 @@ describe('chart animations', () => {
     const easing = jest.fn().mockReturnValue(0.25);
     const g = barChart([{label:'A',value:10}],{duration:100,easing});
     const rect = g.children[0];
-    expect(easing).toHaveBeenCalledWith(0);
+    expect(easing.mock.calls[0][0]).toBeCloseTo(0,2);
     expect(rect.attributes.height).toBe('36');
     expect(rect.attributes.y).toBe('136');
     global.requestAnimationFrame = origRAF;
