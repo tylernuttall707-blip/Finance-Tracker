@@ -52,6 +52,8 @@ chart type, color palette, and more. A sample widget configuration object:
 
 Chart animations are tunable via **Chart animation (ms, 0=off)** in settings. The duration controls bar and pie chart growth and is disabled automatically when the browser reports `prefers-reduced-motion`.
 
+General interface animations can also be customized. **Animation speed** lets you choose fast, normal, slow or completely disable transitions, and it honors the browser's `prefers-reduced-motion` setting.
+
 Both `barChart` and `pieChart` also accept an `easing` option for custom animation curves. By default, animations use an `easeOutCubic` easing function.
 
 ### Data Storage

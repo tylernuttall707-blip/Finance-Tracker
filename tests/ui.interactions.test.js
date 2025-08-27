@@ -16,8 +16,9 @@ function createStyle(){
   });
 }
 class Element {
-  constructor(tag){ this.tagName=tag; this.children=[]; this.attributes={}; this.style=createStyle(); this.eventListeners={}; this.parentNode=null; this.className=''; }
-  setAttribute(k,v){ this.attributes[k]=String(v); if(k==='class') this.className=String(v); }
+  constructor(tag){ this.tagName=tag; this.children=[]; this.attributes={}; this.style=createStyle(); this.eventListeners={}; this.parentNode=null; this.className=''; this.dataset={}; }
+  setAttribute(k,v){ this.attributes[k]=String(v); if(k==='class') this.className=String(v); if(k.startsWith('data-')) this.dataset[k.slice(5)]=String(v); }
+  removeAttribute(k){ delete this.attributes[k]; if(k==='class') this.className=''; if(k.startsWith('data-')) delete this.dataset[k.slice(5)]; }
   appendChild(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.push(child); return child; }
   prepend(child){ if (typeof child==='string') child=new TextNode(child); child.parentNode=this; this.children.unshift(child); return child; }
   addEventListener(type,handler){ (this.eventListeners[type]=this.eventListeners[type]||[]).push(handler); }
@@ -107,5 +108,14 @@ describe('addWidgetControls', () => {
     removeBtn.dispatchEvent({type:'click'});
     expect(state.order).toEqual([]);
     expect(render).toHaveBeenCalled();
+  });
+});
+
+describe('animation speed setting', () => {
+  test('applyThemeTokens applies state.ui.anim', () => {
+    const {state, applyThemeTokens} = loadModule('src/app.js');
+    state.ui.anim = 'fast';
+    applyThemeTokens();
+    expect(document.body.dataset.anim).toBe('fast');
   });
 });

@@ -1,7 +1,13 @@
 import {h} from './dom-utils.js';
 import {easeOutCubic} from './easing.js';
 
-export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null,duration=300,easing=easeOutCubic}={}){
+function baseDuration(){
+  if(typeof window==='undefined' || !window.getComputedStyle) return 150;
+  const v=parseFloat(window.getComputedStyle(document.body).getPropertyValue('--anim-normal'));
+  return isNaN(v)?150:v;
+}
+
+export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=null,yMax=null,duration=baseDuration()*2,easing=easeOutCubic}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
   const W=720,H=200,P=28,G=12,N=items.length,BAR=(W-P*2-(N-1)*G)/Math.max(1,N);
   let vals=items.map(i=>Number(i.value)||0);
@@ -47,7 +53,7 @@ export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=nul
   return g;
 }
 
-export function pieChart(items,{colors=[],duration=300,easing=easeOutCubic}={}){
+export function pieChart(items,{colors=[],duration=baseDuration()*2,easing=easeOutCubic}={}){
   if(!items||!items.length) return h('div',{class:'muted'},'No data');
   const W=220,H=220,R=90,CX=W/2,CY=H/2;
   const total=items.reduce((s,i)=>s+(Number(i.value)||0),0)||1;

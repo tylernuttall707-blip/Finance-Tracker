@@ -16,6 +16,15 @@
   --content-max: 2200px;
   --sidebar-w: 264px;
   --sidebar-w-collapsed: 64px;
+  --anim-fast: 120ms;
+  --anim-normal: 150ms;
+  --anim-slow: 180ms;
+}
+body[data-anim='fast'] { --anim-fast: 80ms; --anim-normal: 120ms; --anim-slow: 150ms }
+body[data-anim='slow'] { --anim-fast: 150ms; --anim-normal: 200ms; --anim-slow: 250ms }
+body[data-anim='off'] { --anim-fast: 0ms; --anim-normal: 0ms; --anim-slow: 0ms }
+@media (prefers-reduced-motion: reduce) {
+  body { --anim-fast: 0ms !important; --anim-normal: 0ms !important; --anim-slow: 0ms !important }
 }
 * { box-sizing: border-box }
 html, body { height: 100% }
@@ -51,17 +60,17 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 sys
 .spacer { flex: 1 }
 .foot { display: flex; flex-direction: column; gap: 8px }
 .switch { position: relative; width: 48px; height: 26px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; cursor: pointer }
-.switch .knob { position: absolute; top: 1px; left: 1px; width: 24px; height: 24px; border: 1px solid var(--border); background: var(--panel); border-radius: 50%; transition: left .18s }
+.switch .knob { position: absolute; top: 1px; left: 1px; width: 24px; height: 24px; border: 1px solid var(--border); background: var(--panel); border-radius: 50%; transition: left var(--anim-slow) }
 .switch.on .knob { left: 23px }
 .main { min-height: 60vh }
 .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px }
 h1 { font-size: 20px; margin: 0; font-weight: 800 }
 .muted { color: var(--muted); font-size: 12px }
-.btn { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; cursor: pointer; transition: .12s }
+.btn { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; cursor: pointer; transition: var(--anim-fast) }
 .btn:hover { background: var(--panel-2) }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff }
 .btn.tiny { padding: 6px 8px; border-radius: 10px; font-size: 12px }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); transition: background .15s, box-shadow .15s }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); transition: background var(--anim-normal), box-shadow var(--anim-normal) }
 .panel:hover { background: var(--panel-2); box-shadow: var(--shadow-hover) }
 .p4 { padding: 14px }
 .grid { display: grid; gap: 14px; grid-auto-flow: dense; grid-auto-rows: minmax(0, max-content) }
@@ -82,7 +91,7 @@ h1 { font-size: 20px; margin: 0; font-weight: 800 }
 .drag { cursor: grab }
 .drag.dragging { opacity: .6 }
 .placeholder { border: 2px dashed var(--border); border-radius: var(--radius); min-height: 80px }
-.card { position: relative; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; background: var(--panel); box-shadow: var(--shadow); transition: transform .12s, background .15s, box-shadow .15s }
+.card { position: relative; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; background: var(--panel); box-shadow: var(--shadow); transition: transform var(--anim-fast), background var(--anim-normal), box-shadow var(--anim-normal) }
 .card:hover { transform: translateY(-1px); background: var(--panel-2); box-shadow: var(--shadow-hover) }
 .badge { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 4px 8px; border-radius: 999px }
 .warn { background: #FFF3D6; color: #A66B00 }

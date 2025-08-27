@@ -109,6 +109,13 @@ function applyThemeTokens(){
   root.style.setProperty('--radius', (state.ui?.radiusPx || 16) + 'px');
   root.style.setProperty('--cols-3', `1fr ${state.ui?.centerWeight || 1.6}fr 1fr`);
   root.style.setProperty('--gradient-alpha', String(state.ui?.gradientAlpha ?? 0.06));
+  const anim=state.ui?.anim;
+  const body=document.body;
+  if(anim && anim!=='normal'){
+    if(body.dataset) body.dataset.anim=anim; else body.setAttribute('data-anim',anim);
+  }else{
+    if(body.dataset) delete body.dataset.anim; else body.removeAttribute && body.removeAttribute('data-anim');
+  }
 }
 
 /* ---------- Storage & State ---------- */
@@ -126,6 +133,7 @@ function seed(){
     sidebarCollapsed:false, centerWeight:1.6, gradientAlpha:.06, radiusPx:16,
     customizing:null, ccDraft:{}, finDraft:{}, histFilter:{mode:'selected',from:'',to:''},
     companyDraft:'',
+    anim:'normal',
     chartAnimMs:300,
     // NEW:
     fullWidth:false,
@@ -1110,9 +1118,12 @@ function settingsSection(){
           h('option',{value:'compact'},'Compact')
         )
       ); })(),
-      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Animations'),
-        h('select',{id,onchange:e=>{ document.body.dataset.anim=e.target.value; }},
-          h('option',{value:'on'},'On'), h('option',{value:'off'},'Off')
+      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Animation speed'),
+        h('select',{id,onchange:e=>{ state.ui.anim=e.target.value; save(); document.body.dataset.anim=e.target.value; }},
+          h('option',{value:'fast',selected:state.ui.anim==='fast'?'selected':null},'Fast'),
+          h('option',{value:'normal',selected:!state.ui.anim||state.ui.anim==='normal'?'selected':null},'Normal'),
+          h('option',{value:'slow',selected:state.ui.anim==='slow'?'selected':null},'Slow'),
+          h('option',{value:'off',selected:state.ui.anim==='off'?'selected':null},'Off')
         )
       ); })(),
       (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Number formatting (thousands)'),
