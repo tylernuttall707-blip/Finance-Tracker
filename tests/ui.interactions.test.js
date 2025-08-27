@@ -61,7 +61,51 @@ function createStyle(){
     getBoundingClientRect(){ return this.__rect || {top:0,height:0}; }
     closest(sel){ if(sel==='[data-widget-id]'){ let el=this; while(el){ if(el.attributes['data-widget-id']) return el; el=el.parentNode; } return null; } return null; }
     contains(node){ let el=node; while(el){ if(el===this) return true; el=el.parentNode; } return false; }
-    querySelectorAll(sel){ const res=[]; const walk=n=>{ if(!(n instanceof Element)) return; if(sel==='[data-widget-id]'&&n.attributes['data-widget-id']) res.push(n); n.children.forEach(walk); }; walk(this); return res; }
+    querySelectorAll(sel){
+      const tokens = sel.trim().split(/\s+/);
+      const results = [];
+      const match = (el, token) => {
+        let tag = null;
+        let id = null;
+        const classes = [];
+        const attrs = {};
+        let rest = token;
+        const tagMatch = rest.match(/^[a-zA-Z0-9]+/);
+        if (tagMatch) { tag = tagMatch[0]; rest = rest.slice(tag.length); }
+        while (rest.length) {
+          if (rest[0] === '#') {
+            const m = rest.match(/^#([a-zA-Z0-9_-]+)/);
+            id = m[1]; rest = rest.slice(m[0].length);
+          } else if (rest[0] === '.') {
+            const m = rest.match(/^\.([a-zA-Z0-9_-]+)/);
+            classes.push(m[1]); rest = rest.slice(m[0].length);
+          } else if (rest[0] === '[') {
+            const m = rest.match(/^\[([^=]+)="([^"]+)"\]/);
+            if (m) { attrs[m[1]] = m[2]; rest = rest.slice(m[0].length); } else break;
+          } else {
+            break;
+          }
+        }
+        if (tag && el.tagName !== tag) return false;
+        if (id && el.attributes.id !== id) return false;
+        for (const c of classes) { if (!el.classList.contains(c)) return false; }
+        for (const k in attrs) { if (el.attributes[k] !== attrs[k]) return false; }
+        return true;
+      };
+      const traverse = (node, idx) => {
+        for (const child of node.children) {
+          if (!(child instanceof Element)) continue;
+          if (match(child, tokens[idx])) {
+            if (idx === tokens.length - 1) results.push(child);
+            else traverse(child, idx + 1);
+          }
+          traverse(child, idx);
+        }
+      };
+      traverse(this, 0);
+      return results;
+    }
+    querySelector(sel){ return this.querySelectorAll(sel)[0] || null; }
   }
 class Document {
   constructor(){ this.documentElement=new Element('html'); this.body=new Element('body'); this.documentElement.appendChild(this.body); }
@@ -77,6 +121,8 @@ class Document {
     search(this.body);
     return found;
   }
+  querySelectorAll(sel){ return this.documentElement.querySelectorAll(sel); }
+  querySelector(sel){ return this.querySelectorAll(sel)[0] || null; }
 }
 const document = new Document();
 const window = { document, addEventListener: () => {}, removeEventListener: () => {} };
