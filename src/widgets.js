@@ -46,11 +46,22 @@ export function addWidgetControls(wrapper, id, orderKey, dash, {state, save, ren
 
 export function enableDrag(container, orderKey, {state, save}) {
   const grid = typeof container === 'string' ? document.getElementById(container) : container;
-  if (!grid) return;
+  if (!grid) return () => {};
+  grid.__dragCleanup?.();
   let dragging = null, placeholder = null;
   function onDragStart(e) {
-    const el = e.currentTarget; dragging = el; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; placeholder = document.createElement('div'); placeholder.className = 'placeholder'; placeholder.style.gridColumn = el.style.gridColumn || 'span 1'; el.after(placeholder); }
+    const el = e.target.closest('[data-widget-id]');
+    if (!el || !grid.contains(el)) return;
+    dragging = el;
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    placeholder = document.createElement('div');
+    placeholder.className = 'placeholder';
+    placeholder.style.gridColumn = el.style.gridColumn || 'span 1';
+    el.after(placeholder);
+  }
   function onDragOver(e) {
+    if (!dragging) return;
     e.preventDefault();
     const target = e.target.closest('[data-widget-id]');
     if (!target || target === dragging || !grid.contains(target)) return;
@@ -58,8 +69,22 @@ export function enableDrag(container, orderKey, {state, save}) {
     const before = (e.clientY - rect.top) < rect.height / 2;
     before ? grid.insertBefore(placeholder, target) : grid.insertBefore(placeholder, target.nextSibling);
   }
-  function onDrop(e) { e.preventDefault(); if (!placeholder || !dragging) return; placeholder.replaceWith(dragging); dragging.classList.remove('dragging'); dragging = null; placeholder = null; persist(); }
-  function onDragEnd() { if (placeholder && dragging) { placeholder.replaceWith(dragging); } dragging?.classList.remove('dragging'); dragging = null; placeholder = null; persist(); }
+  function onDrop(e) {
+    if (!dragging || !placeholder) return;
+    e.preventDefault();
+    placeholder.replaceWith(dragging);
+    dragging.classList.remove('dragging');
+    dragging = null;
+    placeholder = null;
+    persist();
+  }
+  function onDragEnd() {
+    if (placeholder && dragging) placeholder.replaceWith(dragging);
+    dragging?.classList.remove('dragging');
+    dragging = null;
+    placeholder = null;
+    persist();
+  }
   function persist() {
     const ids = [];
     grid.querySelectorAll('[data-widget-id]').forEach(el => {
@@ -68,10 +93,17 @@ export function enableDrag(container, orderKey, {state, save}) {
     state[orderKey] = ids;
     save();
   }
-  grid.querySelectorAll('[data-widget-id]').forEach(el => {
-    el.addEventListener('dragstart', onDragStart);
-    el.addEventListener('dragover', onDragOver, { passive: false });
-    el.addEventListener('drop', onDrop, { passive: false });
-    el.addEventListener('dragend', onDragEnd);
-  });
+  grid.addEventListener('dragstart', onDragStart);
+  grid.addEventListener('dragover', onDragOver, { passive: false });
+  grid.addEventListener('drop', onDrop, { passive: false });
+  grid.addEventListener('dragend', onDragEnd);
+  const cleanup = () => {
+    grid.removeEventListener('dragstart', onDragStart);
+    grid.removeEventListener('dragover', onDragOver);
+    grid.removeEventListener('drop', onDrop);
+    grid.removeEventListener('dragend', onDragEnd);
+    grid.__dragCleanup = null;
+  };
+  grid.__dragCleanup = cleanup;
+  return cleanup;
 }
