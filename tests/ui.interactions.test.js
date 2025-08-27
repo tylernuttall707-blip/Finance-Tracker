@@ -135,6 +135,24 @@ describe('center column weight slider', () => {
   });
 });
 
+describe('column count control', () => {
+  test('updates grid columns on input', () => {
+    const {state, render} = loadModule('src/app.js');
+    const root = document.createElement('div');
+    root.id = 'app';
+    document.body.appendChild(root);
+    state.section = 'overview';
+    state.ui.customizing = 'overview';
+    render();
+    const slider = document.querySelector('.customize-bar input[type="range"][min="1"][max="6"]');
+    slider.value = '4';
+    slider.dispatchEvent({type:'input'});
+    expect(state.ui.colCount.overview).toBe(4);
+    const grid = document.getElementById('ov-grid');
+    expect(grid.getAttribute('style')).toBe('gridTemplateColumns:repeat(4, minmax(0,1fr))');
+  });
+});
+
 describe('addWidgetControls', () => {
   test('resizes and removes widgets', () => {
     const {addWidgetControls} = loadModule('src/widgets.js');
