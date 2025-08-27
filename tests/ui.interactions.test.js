@@ -55,6 +55,8 @@ function loadModule(relPath){
   let finalCode = code;
   if(absPath.endsWith(path.join('src','app.js'))){
     finalCode += '\nmodule.exports.applyThemeTokens = applyThemeTokens;';
+    finalCode += '\nmodule.exports.currencyInput = currencyInput;';
+    finalCode += '\nmodule.exports.percentInput = percentInput;';
   }
   const module = {exports:{}};
   const dirname = path.dirname(absPath);
@@ -128,5 +130,37 @@ describe('applyThemeTokens', () => {
       .toBe('linear-gradient(180deg,#0F172A,#1E293B)');
     expect(document.documentElement.style.getPropertyValue('--text'))
       .toBe('#F1F5F9');
+  });
+});
+
+describe('input sanitization', () => {
+  test('currencyInput strips invalid chars and passes numbers', () => {
+    const {currencyInput} = loadModule('src/app.js');
+    const changed = jest.fn();
+    const field = currencyInput('', changed, 'Amt');
+    const input = field.children[1].children[1];
+    input.value = '12a.3';
+    input.dispatchEvent({type:'input'});
+    expect(input.value).toBe('12.3');
+    expect(changed).toHaveBeenLastCalledWith(12.3);
+    input.value = 'abc';
+    input.dispatchEvent({type:'input'});
+    expect(input.value).toBe('');
+    expect(changed).toHaveBeenLastCalledWith(null);
+  });
+
+  test('percentInput strips invalid chars and passes numbers', () => {
+    const {percentInput} = loadModule('src/app.js');
+    const changed = jest.fn();
+    const field = percentInput('', changed, 'Rate');
+    const input = field.children[1].children[0];
+    input.value = '10x.5';
+    input.dispatchEvent({type:'input'});
+    expect(input.value).toBe('10.5');
+    expect(changed).toHaveBeenLastCalledWith(10.5);
+    input.value = 'abc';
+    input.dispatchEvent({type:'input'});
+    expect(input.value).toBe('');
+    expect(changed).toHaveBeenLastCalledWith(null);
   });
 });
