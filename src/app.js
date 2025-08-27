@@ -1,4 +1,4 @@
-import {h, $, $$, clamp} from './dom-utils.js';
+import {h, $, $$, clamp, uid} from './dom-utils.js';
 import {barChart, pieChart} from './charts.js';
 import {widget, addWidgetControls, enableDrag} from './widgets.js';
 
@@ -7,7 +7,6 @@ window.WidgetRegistry = window.WidgetRegistry || {}; // global
 const WidgetRegistry = window.WidgetRegistry;
 
 /* ---------- Utilities ---------- */
-export const uid=()=>globalThis.crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36);
 export const todayISO=()=>new Date().toISOString().slice(0,10);
 export const daysBetween = (a,b) => { const A=new Date(a), B=new Date(b); A.setHours(0,0,0,0); B.setHours(0,0,0,0); return Math.round((B-A)/86400000) };
 export const fmtUSD = (n) => (n==null || isNaN(n) ? '—' : Number(n).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2}));

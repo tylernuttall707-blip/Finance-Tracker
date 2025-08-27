@@ -1,6 +1,10 @@
 export const $ = (s, el = document) => el.querySelector(s);
 export const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 export const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+export const uid = () =>
+  globalThis.crypto?.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
