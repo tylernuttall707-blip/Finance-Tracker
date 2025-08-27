@@ -2,6 +2,7 @@ name: Build Docs
 on:
   push:
     branches: [ "main" ]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,8 +21,10 @@ jobs:
           node-version: 18
       - run: npm ci
       - run: npm run docs
-      - uses: actions/upload-pages-artifact@v3
+      - if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs
-      - id: deployment
+      - if: ${{ github.ref == 'refs/heads/main' }}
+        id: deployment
         uses: actions/deploy-pages@v4
