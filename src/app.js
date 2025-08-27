@@ -143,7 +143,7 @@ function seed(){
    cardOrder:[]            // array of card ids for Cards Overview ordering
  };
 }
-function load(){
+export function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return null;
@@ -167,7 +167,9 @@ function load(){
     delete obj.widgetCol; // migrate: remove legacy column tracking
 
     return obj;
-  }catch{
+  }catch(e){
+    console.error('Failed to load state', e);
+    showToast('Storage error', 'Stored data is corrupted, resetting.');
     return null;
   }
 }
