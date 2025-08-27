@@ -55,6 +55,7 @@ function loadModule(relPath){
   let finalCode = code;
   if(absPath.endsWith(path.join('src','app.js'))){
     finalCode += '\nmodule.exports.applyThemeTokens = applyThemeTokens;';
+    finalCode += '\nmodule.exports._appSidebar = appSidebar;';
   }
   const module = {exports:{}};
   const dirname = path.dirname(absPath);
@@ -107,5 +108,17 @@ describe('addWidgetControls', () => {
     removeBtn.dispatchEvent({type:'click'});
     expect(state.order).toEqual([]);
     expect(render).toHaveBeenCalled();
+  });
+});
+
+describe('sidebar collapse', () => {
+  test('toggles collapsed class', () => {
+    const {state, _appSidebar} = loadModule('src/app.js');
+    state.ui.sidebarCollapsed = false;
+    let sidebar = _appSidebar();
+    expect(sidebar.className.includes('sidebar--collapsed')).toBe(false);
+    state.ui.sidebarCollapsed = true;
+    sidebar = _appSidebar();
+    expect(sidebar.className.includes('sidebar--collapsed')).toBe(true);
   });
 });

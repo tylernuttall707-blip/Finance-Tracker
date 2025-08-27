@@ -21,7 +21,11 @@
 html, body { height: 100% }
 body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Noto Sans' }
 .app { max-width: var(--content-max); margin: 0 auto; padding: 16px 16px 24px }
-.layout { display: grid; gap: 16px }
+.layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: auto 1fr;
+}
 .sidebar {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -34,7 +38,10 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 sys
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: var(--sidebar-w);
+  transition: width 0.2s ease;
 }
+.sidebar.sidebar--collapsed { width: var(--sidebar-w-collapsed) }
 .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px }
 .brand .logo { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #fff; display: inline-grid; place-items: center; overflow: hidden }
 .brand .logo img { width: 100%; height: 100%; object-fit: cover }

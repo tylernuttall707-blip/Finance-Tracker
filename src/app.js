@@ -387,7 +387,7 @@ function appSidebar(){
   );
   const arrow = collapsed ? chevronRight() : chevronLeft();
   const logoNode = state.logoData ? h('img',{src:state.logoData,alt:'Logo'}) : defaultLogoSvg();
-  return h('aside',{class:'sidebar'},
+  return h('aside',{class:'sidebar'+(collapsed?' sidebar--collapsed':'')},
     h('div',{class:'brand'},
       h('div',{class:'logo'}, logoNode),
       collapsed? null : h('div',{class:'title'}, state.company || 'Company Finance'),
@@ -1162,8 +1162,7 @@ export function hardRepair(){
 export function render(){
   applyThemeTokens();
   const root=$('#app'); root.innerHTML='';
-  const collapsed = !!state.ui.sidebarCollapsed;
-  const layout=h('div',{class:'layout', style:`grid-template-columns:${collapsed? 'var(--sidebar-w-collapsed)':'var(--sidebar-w)'} 1fr`});
+  const layout=h('div',{class:'layout'});
   layout.appendChild(appSidebar());
   const main=h('div',{class:'main'});
   main.appendChild(appHeader());
