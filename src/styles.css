@@ -1,7 +1,7 @@
 :root {
   --bg: linear-gradient(180deg, #F8FAFC, #E2E8F0);
   --panel: linear-gradient(180deg, #FFFFFF, #E5E9F2);
-  --panel-2: #E2E8F0;
+  --panel-2: #F1F5F9;
   --border: #94A3B8;
   --text: #0F172A;
   --muted: #475569;
@@ -9,7 +9,7 @@
   --accent: #1D4ED8;
   --ring: #60A5FA;
   --shadow: 0 0 0 1px rgba(0,0,0,.05), 0 4px 8px rgba(0,0,0,.06), 0 14px 28px rgba(0,0,0,.06);
-  --shadow-hover: 0 0 0 1px rgba(0,0,0,.06), 0 4px 8px rgba(0,0,0,.08), 0 16px 32px rgba(0,0,0,.1);
+  --shadow-hover: 0 0 0 1px rgba(0,0,0,.04), 0 2px 4px rgba(0,0,0,.05), 0 8px 16px rgba(0,0,0,.06);
   --radius: 16px;
   --cols-3: 1fr 1.6fr 1fr;
   --gradient-alpha: .06;
