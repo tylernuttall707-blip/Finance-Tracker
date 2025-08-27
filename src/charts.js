@@ -21,7 +21,11 @@ export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=nul
     const bh=(H-P*2)*ratio;
     const y=baseY-bh;
     const fill=colors[idx]||'currentColor';
-    const rect=h('rect',{x,y:animate?baseY:y,width:BAR,height:animate?0:bh,fill,opacity:.22});
+    const rect=h('rect',{x,y,width:BAR,height:bh,fill,opacity:.22});
+    rect.style.setProperty('transform-origin','bottom');
+    rect.style.setProperty('transform-box','fill-box');
+    rect.style.setProperty('will-change','transform');
+    rect.style.setProperty('transform',animate?'scaleY(0)':'scaleY(1)');
     g.appendChild(rect);
     g.appendChild(h('text',{x:x+BAR/2,y:H-8,'text-anchor':'middle',style:'font-size:10px;fill:var(--muted);'}, (it.label||'').slice(0,16)+(it.label&&it.label.length>16?'…':'')));
     const topTxt=currency?('$'+val.toLocaleString()):(val+valueSuffix);
@@ -36,8 +40,7 @@ export function barChart(items,{colors=[],valueSuffix='',currency=false,yMin=nul
       const p=easing(t);
       bars.forEach(b=>{
         const h=b.bh*p;
-        b.rect.setAttribute('height',h);
-        b.rect.setAttribute('y',baseY-h);
+        b.rect.style.setProperty('transform',`scaleY(${p})`);
         b.top.setAttribute('y',baseY-h-4);
       });
       if(t<1) requestAnimationFrame(frame);

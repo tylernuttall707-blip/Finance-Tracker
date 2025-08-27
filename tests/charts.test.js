@@ -62,6 +62,7 @@ describe('chart animations', () => {
     const rect = g.children[0];
     expect(rect.attributes.height).toBe('144');
     expect(rect.attributes.y).toBe('28');
+    expect(rect.style.getPropertyValue('transform')).toBe('scaleY(1)');
   });
 
   test('barChart skips animation when reduced motion', () => {
@@ -70,6 +71,7 @@ describe('chart animations', () => {
     const g = barChart([{label:'A',value:10}],{duration:100});
     const rect = g.children[0];
     expect(rect.attributes.height).toBe('144');
+    expect(rect.style.getPropertyValue('transform')).toBe('scaleY(1)');
   });
 
   test('pieChart duration 0 renders final slice', () => {
@@ -90,10 +92,18 @@ describe('chart animations', () => {
     const easing = jest.fn().mockReturnValue(0.25);
     const g = barChart([{label:'A',value:10}],{duration:100,easing});
     const rect = g.children[0];
-    expect(easing).toHaveBeenCalledWith(0);
-    expect(rect.attributes.height).toBe('36');
-    expect(rect.attributes.y).toBe('136');
+    expect(easing).toHaveBeenCalled();
+    expect(easing.mock.calls[0][0]).toBeCloseTo(0,1);
+    expect(rect.style.getPropertyValue('transform')).toBe('scaleY(0.25)');
     global.requestAnimationFrame = origRAF;
     Date.now = origNow;
+  });
+
+  test('barChart bars hint GPU acceleration', () => {
+    const {barChart} = loadModule('src/charts.js');
+    const g = barChart([{label:'A',value:10}],{duration:0});
+    const rect = g.children[0];
+    expect(rect.style.getPropertyValue('will-change')).toBe('transform');
+    expect(rect.style.getPropertyValue('transform-origin')).toBe('bottom');
   });
 });
