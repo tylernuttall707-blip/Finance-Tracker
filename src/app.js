@@ -462,6 +462,10 @@ function customizeBar(dash, orderKey, gridId){
           h('label',{for:centerId,class:'muted'},'Center column weight'),
           h('input',{id:centerId,type:'range',min:'1.3',max:'1.8',step:'0.1',value:String(state.ui.centerWeight||1.6),oninput:e=>{ state.ui.centerWeight=Number(e.target.value); save(); applyThemeTokens(); }})
         ); })(),
+        (function(){ const colsId=uid(); return h('div',null,
+          h('label',{for:colsId,class:'muted'},'Columns'),
+          h('input',{id:colsId,type:'range',min:'1',max:'6',step:'1',value:String(clamp(state.ui.colCount?.[dash]||3,1,6)),oninput:e=>{ state.ui.colCount[dash]=clamp(Number(e.target.value||3),1,6); save(); render(); }})
+        ); })(),
         h('button',{class:'btn tiny',onclick:()=>{ state[orderKey] = availableForDashboard(dash).slice(); save(); render(); showToast('Reset','Widget list restored for '+dash+'.'); }},'Reset'),
         h('button',{class:'btn tiny',onclick:()=>{ state.ui.customizing=null; save(); render(); }},'Done')
       )
@@ -1146,21 +1150,6 @@ function settingsSection(){
           h('option',{value:'on', selected: state.ui.useGrouping!==false?'selected':null},'On'),
           h('option',{value:'off', selected: state.ui.useGrouping===false?'selected':null},'Off')
         )
-      ); })(),
-      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Overview columns'),
-        h('input',{id,type:'number',min:'1',max:'6',
-          value:String(state.ui.colCount?.overview || 3),
-          oninput:e=>{ state.ui.colCount.overview = clamp(Number(e.target.value||3),1,6); save(); render(); }})
-      ); })(),
-      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Credit columns'),
-        h('input',{id,type:'number',min:'1',max:'6',
-          value:String(state.ui.colCount?.credit || 3),
-          oninput:e=>{ state.ui.colCount.credit = clamp(Number(e.target.value||3),1,6); save(); render(); }})
-      ); })(),
-      (function(){ const id=uid(); return h('div',{class:'field'}, h('label',{for:id},'Financials columns'),
-        h('input',{id,type:'number',min:'1',max:'6',
-          value:String(state.ui.colCount?.financials || 3),
-          oninput:e=>{ state.ui.colCount.financials = clamp(Number(e.target.value||3),1,6); save(); render(); }})
       ); })()
     )
   );
