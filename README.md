@@ -1,75 +1,125 @@
-# Finance & Credit Card Tracker
+# Finance Tracker - QuickBooks Alternative
 
-This application helps you stay on top of your finances by:
+A comprehensive financial management system for businesses, featuring double-entry accounting, invoice management, accounts payable/receivable, and cash flow forecasting.
 
-- Tracking income and expenses across accounts
-- Monitoring credit card balances and payments
-- Visualizing spending trends to maintain a budget
+## Features
 
-## Installation
+- **Transaction Management**: Import and categorize bank and credit card transactions from CSV
+- **Double-Entry Accounting**: Full chart of accounts with journal entries
+- **Accounts Payable (AP)**: Track bills, vendors, and payment due dates
+- **Accounts Receivable (AR)**: Manage invoices, customers, and incoming payments
+- **Credit Card Tracking**: Monitor balances, due dates, and utilization
+- **Financial Reports**:
+  - Profit & Loss (P&L) Statement
+  - Balance Sheet
+  - Cash Flow Statement
+- **Cash Flow Forecasting**: Predict future cash position based on known expenses, AP/AR, and estimated income
+- **Multi-User Support**: Basic authentication for team collaboration
 
+## Tech Stack
+
+### Frontend
+- React 18
+- Vite (build tool)
+- TailwindCSS (styling)
+- React Router (navigation)
+- Recharts (data visualization)
+
+### Backend
+- Node.js + Express
+- PostgreSQL (database)
+- Sequelize (ORM)
+- JWT (authentication)
+
+## Project Structure
+
+```
+Finance-Tracker/
+├── frontend/          # React application
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── App.jsx
+│   └── package.json
+│
+├── backend/           # Express API server
+│   ├── src/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   └── server.js
+│   ├── migrations/
+│   └── package.json
+│
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 14+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
 ```bash
+git clone <repository-url>
+cd Finance-Tracker
+```
+
+2. Set up the backend
+```bash
+cd backend
 npm install
+cp .env.example .env
+# Edit .env with your PostgreSQL credentials
+npm run migrate
+npm run dev
 ```
 
-## Running the App
-
-Use the Node.js helper script:
-
+3. Set up the frontend
 ```bash
-npm start
+cd frontend
+npm install
+npm run dev
 ```
 
-or open `index.html` directly in your browser for a static preview.
+4. Access the application at `http://localhost:5173`
 
-To build a production bundle (useful for GitHub Pages deployments), run:
+## Development
 
+### Backend API
+- Runs on `http://localhost:3000`
+- API documentation available at `/api/docs`
+
+### Frontend
+- Runs on `http://localhost:5173`
+- Hot module replacement enabled
+
+### Database Migrations
 ```bash
-npm run build
+cd backend
+npm run migrate       # Run migrations
+npm run migrate:undo  # Rollback migration
 ```
 
-The compiled assets will be output to the `dist/` folder.
+## Roadmap
 
-## Tests
+- [x] Phase 1: Foundation & Authentication
+- [ ] Phase 2: Core Accounting & Transaction Management
+- [ ] Phase 3: AP/AR & Invoicing
+- [ ] Phase 4: Credit Card Management
+- [ ] Phase 5: Reporting & Forecasting
+- [ ] Phase 6: Plaid Integration (future)
 
-```bash
-npm test
-```
+## License
 
-## Configuration
+MIT
 
-Widgets and dashboard panels can be customized through the in-app settings. Widget titles are editable—leave blank to use the default label.
-Dashboard column counts are adjustable in Customize mode via a slider (1–6 columns per dashboard).
-Options include size (1–3 columns), height mode (auto, short, medium, tall, or fixed pixels),
-chart type, color palette, and more. A sample widget configuration object:
+## Contributing
 
-```javascript
-{
-  title: 'Custom Title',
-  chartType: 'bar',
-  color: '#3b82f6',
-  size: 2
-}
-```
-
-Chart animations are tunable via **Chart animation (ms, 0=off)** in settings. The duration controls bar and pie chart growth and is disabled automatically when the browser reports `prefers-reduced-motion`.
-
-Both `barChart` and `pieChart` also accept an `easing` option for custom animation curves. By default, animations use an `easeOutCubic` easing function.
-
-### Data Storage
-
-All preferences and financial data are stored in the browser's `localStorage`
-under the key `cc-finance-tracker-v27`. Clearing your browser data will reset the app.
-
-## Contribution Guidelines
-
-1. Fork the repository and create a new branch for your feature or bug fix.
-2. Install dependencies and ensure tests pass.
-3. Submit a pull request with a clear description of your changes.
-
-## Quick Preview
-
-A GitHub Pages deployment is available for an immediate preview:
-
-1. Enable GitHub Pages in your repository settings and point it to the `dist/` directory after running the build command above.
-2. Visit `https://<your-user>.github.io/Finance-Tracker/` to view the site once the deployment finishes.
+See AGENTS.md for development guidelines.
