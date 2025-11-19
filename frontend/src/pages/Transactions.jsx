@@ -79,9 +79,9 @@ export default function Transactions() {
       description: transaction.description,
       type: transaction.type,
       reference: transaction.reference || '',
-      debitAccountId: transaction.TransactionLines?.[0]?.accountId || '',
-      creditAccountId: transaction.TransactionLines?.[1]?.accountId || '',
-      amount: transaction.TransactionLines?.[0]?.debit || '',
+      debitAccountId: transaction.lines?.[0]?.accountId || '',
+      creditAccountId: transaction.lines?.[1]?.accountId || '',
+      amount: transaction.lines?.[0]?.debit || '',
     });
     setShowModal(true);
   };
@@ -139,7 +139,7 @@ export default function Transactions() {
 
   const summary = transactions.reduce((acc, t) => {
     if (t.type === 'bank') {
-      const amount = parseFloat(t.TransactionLines?.[0]?.debit || 0);
+      const amount = parseFloat(t.lines?.[0]?.debit || 0);
       acc.income += amount;
     }
     return acc;
@@ -360,7 +360,7 @@ export default function Transactions() {
                     {transaction.reference || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${parseFloat(transaction.TransactionLines?.[0]?.debit || transaction.TransactionLines?.[0]?.credit || 0).toFixed(2)}
+                    ${parseFloat(transaction.lines?.[0]?.debit || transaction.lines?.[0]?.credit || 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button

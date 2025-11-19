@@ -59,7 +59,7 @@ export default function Reports() {
     let totalExpenses = 0;
 
     transactions.forEach((txn) => {
-      txn.TransactionLines?.forEach((line) => {
+      txn.lines?.forEach((line) => {
         const account = accounts.find((a) => a.id === line.accountId);
         if (!account) return;
 
@@ -100,7 +100,7 @@ export default function Reports() {
     let totalEquity = 0;
 
     transactions.forEach((txn) => {
-      txn.TransactionLines?.forEach((line) => {
+      txn.lines?.forEach((line) => {
         const account = accounts.find((a) => a.id === line.accountId);
         if (!account) return;
 
@@ -145,9 +145,9 @@ export default function Reports() {
 
     transactions.forEach((txn) => {
       const amount = parseFloat(
-        txn.TransactionLines?.[0]?.debit || txn.TransactionLines?.[0]?.credit || 0
+        txn.lines?.[0]?.debit || txn.lines?.[0]?.credit || 0
       );
-      const isInflow = txn.TransactionLines?.[0]?.debit > 0;
+      const isInflow = txn.lines?.[0]?.debit > 0;
 
       // Simplified categorization based on transaction type
       if (txn.type === 'bank' || txn.type === 'journal') {
