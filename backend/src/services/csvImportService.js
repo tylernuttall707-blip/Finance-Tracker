@@ -10,14 +10,30 @@ import sequelize from '../config/database.js';
  */
 export async function parseCSV(fileBuffer, filename) {
   return new Promise((resolve, reject) => {
+    // First, find the header row by scanning for common header patterns
+    const lines = fileBuffer.toString().split('\n');
+    let headerRowIndex = 0;
+    const headerPatterns = ['date', 'description', 'amount', 'credit', 'debit', 'transaction'];
+
+    for (let i = 0; i < Math.min(10, lines.length); i++) {
+      const line = lines[i].toLowerCase();
+      const matchCount = headerPatterns.filter(pattern => line.includes(pattern)).length;
+
+      // If we find at least 2 header patterns, this is likely the header row
+      if (matchCount >= 2) {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
     const results = [];
     const errors = [];
-    let lineNumber = 1;
+    let lineNumber = headerRowIndex + 1; // Start counting from header row
 
     Readable.from(fileBuffer.toString())
       .pipe(csv({
         mapHeaders: ({ header }) => header.trim().toLowerCase().replace(/\s+/g, '_'),
-        skipLines: 0,
+        skipLines: headerRowIndex,
       }))
       .on('data', (data) => {
         lineNumber++;
@@ -80,7 +96,7 @@ function parseTransactionRow(row, lineNumber) {
   }
 
   // Find reference/check number
-  const refFields = ['reference', 'ref', 'check_number', 'check_num', 'transaction_id', 'trans_id'];
+  const refFields = ['reference', 'ref', 'check_number', 'check_num', 'check_#', 'transaction_id', 'trans_id'];
   const reference = findFieldValue(row, refFields) || '';
 
   if (!date || !description) {
