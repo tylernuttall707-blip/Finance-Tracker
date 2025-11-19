@@ -74,8 +74,8 @@ export default function Dashboard() {
         let outflow = 0;
 
         dayTransactions.forEach(t => {
-          const amount = parseFloat(t.TransactionLines?.[0]?.debit || t.TransactionLines?.[0]?.credit || 0);
-          if (t.TransactionLines?.[0]?.debit > 0) {
+          const amount = parseFloat(t.lines?.[0]?.debit || t.lines?.[0]?.credit || 0);
+          if (t.lines?.[0]?.debit > 0) {
             inflow += amount;
           } else {
             outflow += amount;
@@ -268,8 +268,8 @@ export default function Dashboard() {
                   <div className="text-right">
                     <p className="text-sm font-semibold text-gray-900">
                       ${parseFloat(
-                        transaction.TransactionLines?.[0]?.debit ||
-                          transaction.TransactionLines?.[0]?.credit ||
+                        transaction.lines?.[0]?.debit ||
+                          transaction.lines?.[0]?.credit ||
                           0
                       ).toFixed(2)}
                     </p>

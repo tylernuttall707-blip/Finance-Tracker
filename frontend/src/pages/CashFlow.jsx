@@ -95,7 +95,7 @@ export default function CashFlow() {
       txns.forEach((txn) => {
         const date = format(new Date(txn.date), 'MMM dd');
         const amount = parseFloat(
-          txn.TransactionLines?.[0]?.debit || txn.TransactionLines?.[0]?.credit || 0
+          txn.lines?.[0]?.debit || txn.lines?.[0]?.credit || 0
         );
 
         if (!dailyFlow[date]) {
@@ -103,7 +103,7 @@ export default function CashFlow() {
         }
 
         // Determine if it's income or expense based on account type or transaction type
-        const isIncome = txn.TransactionLines?.[0]?.debit > 0;
+        const isIncome = txn.lines?.[0]?.debit > 0;
 
         if (isIncome) {
           dailyFlow[date].inflow += amount;
@@ -147,7 +147,7 @@ export default function CashFlow() {
     transactions.forEach((txn) => {
       const category = txn.type || 'Other';
       const amount = parseFloat(
-        txn.TransactionLines?.[0]?.credit || txn.TransactionLines?.[0]?.debit || 0
+        txn.lines?.[0]?.credit || txn.lines?.[0]?.debit || 0
       );
 
       if (!categories[category]) {
@@ -168,9 +168,9 @@ export default function CashFlow() {
     transactions.forEach((txn) => {
       const month = format(new Date(txn.date), 'MMM yyyy');
       const amount = parseFloat(
-        txn.TransactionLines?.[0]?.debit || txn.TransactionLines?.[0]?.credit || 0
+        txn.lines?.[0]?.debit || txn.lines?.[0]?.credit || 0
       );
-      const isIncome = txn.TransactionLines?.[0]?.debit > 0;
+      const isIncome = txn.lines?.[0]?.debit > 0;
 
       if (!monthly[month]) {
         monthly[month] = { month, income: 0, expenses: 0 };
