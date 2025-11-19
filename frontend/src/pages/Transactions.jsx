@@ -36,7 +36,7 @@ export default function Transactions() {
         getTransactions(),
         getAccounts(),
       ]);
-      setTransactions(transactionsRes.data);
+      setTransactions(transactionsRes.data?.transactions || []);
       setAccounts(accountsRes.data);
     } catch (error) {
       console.error('Failed to load data:', error);

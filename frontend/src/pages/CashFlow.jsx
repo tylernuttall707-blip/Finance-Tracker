@@ -84,7 +84,7 @@ export default function CashFlow() {
         endDate: format(end, 'yyyy-MM-dd'),
       });
 
-      const txns = response.data || [];
+      const txns = response.data?.transactions || [];
       setTransactions(txns);
 
       // Process transactions for cash flow analysis

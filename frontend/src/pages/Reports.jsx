@@ -35,7 +35,7 @@ export default function Reports() {
         getAccounts(),
       ]);
 
-      const transactions = transactionsRes.data || [];
+      const transactions = transactionsRes.data?.transactions || [];
       const accounts = accountsRes.data || [];
 
       if (activeReport === 'profit-loss') {
