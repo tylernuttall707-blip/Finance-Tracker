@@ -516,7 +516,7 @@ export default function Reports() {
                       <span
                         className={reportData.totalOperating >= 0 ? 'text-green-600' : 'text-red-600'}
                       >
-                        ${reportData.totalOperating.toFixed(2)}
+                        ${reportData.totalOperating?.toFixed(2) ?? '0.00'}
                       </span>
                     </div>
                   </div>
@@ -534,7 +534,7 @@ export default function Reports() {
                       reportData.netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
-                    ${reportData.netCashFlow.toFixed(2)}
+                    ${reportData.netCashFlow?.toFixed(2) ?? '0.00'}
                   </span>
                 </div>
               </div>
