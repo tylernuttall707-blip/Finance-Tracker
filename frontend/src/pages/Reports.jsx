@@ -320,7 +320,7 @@ export default function Reports() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 pb-2 border-b">
                   Income
                 </h3>
-                {reportData.income.length > 0 ? (
+                {reportData.income?.length > 0 ? (
                   <div className="space-y-2">
                     {reportData.income.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
@@ -347,7 +347,7 @@ export default function Reports() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 pb-2 border-b">
                   Expenses
                 </h3>
-                {reportData.expenses.length > 0 ? (
+                {reportData.expenses?.length > 0 ? (
                   <div className="space-y-2">
                     {reportData.expenses.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
@@ -406,7 +406,7 @@ export default function Reports() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 pb-2 border-b">
                     Assets
                   </h3>
-                  {reportData.assets.length > 0 ? (
+                  {reportData.assets?.length > 0 ? (
                     <div className="space-y-2">
                       {reportData.assets.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm">
@@ -433,7 +433,7 @@ export default function Reports() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 pb-2 border-b">
                     Liabilities
                   </h3>
-                  {reportData.liabilities.length > 0 ? (
+                  {reportData.liabilities?.length > 0 ? (
                     <div className="space-y-2 mb-6">
                       {reportData.liabilities.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm">
@@ -457,7 +457,7 @@ export default function Reports() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 pb-2 border-b">
                     Equity
                   </h3>
-                  {reportData.equity.length > 0 ? (
+                  {reportData.equity?.length > 0 ? (
                     <div className="space-y-2">
                       {reportData.equity.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm">
@@ -497,7 +497,7 @@ export default function Reports() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 pb-2 border-b">
                   Operating Activities
                 </h3>
-                {reportData.operating.length > 0 ? (
+                {reportData.operating?.length > 0 ? (
                   <div className="space-y-2">
                     {reportData.operating.slice(0, 10).map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
