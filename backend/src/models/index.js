@@ -8,6 +8,8 @@ import Customer from './Customer.js';
 import Bill from './Bill.js';
 import Invoice from './Invoice.js';
 import CreditCard from './CreditCard.js';
+import CategorizationRule from './CategorizationRule.js';
+import ImportBatch from './ImportBatch.js';
 
 // User associations
 User.hasMany(Transaction, { foreignKey: 'userId', as: 'transactions' });
@@ -43,6 +45,17 @@ Transaction.hasOne(Bill, { foreignKey: 'transactionId', as: 'bill' });
 Invoice.belongsTo(Transaction, { foreignKey: 'transactionId', as: 'transaction' });
 Transaction.hasOne(Invoice, { foreignKey: 'transactionId', as: 'invoice' });
 
+// CategorizationRule associations
+User.hasMany(CategorizationRule, { foreignKey: 'userId', as: 'categorizationRules' });
+CategorizationRule.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+Account.hasMany(CategorizationRule, { foreignKey: 'accountId', as: 'categorizationRules' });
+CategorizationRule.belongsTo(Account, { foreignKey: 'accountId', as: 'account' });
+
+// ImportBatch associations
+User.hasMany(ImportBatch, { foreignKey: 'userId', as: 'importBatches' });
+ImportBatch.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 export {
   User,
   Account,
@@ -54,4 +67,6 @@ export {
   Bill,
   Invoice,
   CreditCard,
+  CategorizationRule,
+  ImportBatch,
 };
