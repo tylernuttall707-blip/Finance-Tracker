@@ -75,9 +75,9 @@ function parseTransactionRow(row, lineNumber) {
 
   // Find amount column - handle both single amount and debit/credit columns
   let amount = 0;
-  const amountFields = ['amount', 'transaction_amount', 'trans_amount'];
-  const debitFields = ['debit', 'withdrawal', 'withdrawals', 'debit_amount'];
-  const creditFields = ['credit', 'deposit', 'deposits', 'credit_amount'];
+  const amountFields = ['amount', 'transaction_amount', 'trans_amount', 'value', 'total'];
+  const debitFields = ['debit', 'withdrawal', 'withdrawals', 'debit_amount', 'expense', 'expenses', 'payment', 'payments', 'charge', 'charges', 'spent'];
+  const creditFields = ['credit', 'deposit', 'deposits', 'credit_amount', 'income', 'revenue', 'received', 'receipt', 'receipts'];
 
   // Check for single amount column
   const amountValue = findFieldValue(row, amountFields);
