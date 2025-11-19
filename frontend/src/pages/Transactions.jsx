@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction, getAccounts } from '../services/api';
-import { PlusIcon, PencilIcon, TrashIcon, FunnelIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, FunnelIcon, CalendarIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import CSVImportModal from '../components/CSVImportModal';
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [filterType, setFilterType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
@@ -155,16 +157,25 @@ export default function Transactions() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Cashflow Tracker</h1>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Transaction
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            <ArrowUpTrayIcon className="h-5 w-5 mr-2" />
+            Import CSV
+          </button>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Add Transaction
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -457,6 +468,14 @@ export default function Transactions() {
           </div>
         </div>
       )}
+
+      {/* CSV Import Modal */}
+      <CSVImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImportComplete={() => loadData()}
+        accounts={accounts}
+      />
     </div>
   );
 }
