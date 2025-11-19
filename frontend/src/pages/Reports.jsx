@@ -195,18 +195,18 @@ export default function Reports() {
     if (reportData.type === 'profit-loss') {
       csv += 'Income\n';
       reportData.income.forEach((item) => {
-        csv += `${item.name},${item.amount.toFixed(2)}\n`;
+        csv += `${item.name},${item.amount?.toFixed(2) ?? '0.00'}\n`;
       });
-      csv += `Total Income,${reportData.totalIncome.toFixed(2)}\n\n`;
+      csv += `Total Income,${reportData.totalIncome?.toFixed(2) ?? '0.00'}\n\n`;
 
       csv += 'Expenses\n';
       reportData.expenses.forEach((item) => {
-        csv += `${item.name},${item.amount.toFixed(2)}\n`;
+        csv += `${item.name},${item.amount?.toFixed(2) ?? '0.00'}\n`;
       });
-      csv += `Total Expenses,${reportData.totalExpenses.toFixed(2)}\n\n`;
+      csv += `Total Expenses,${reportData.totalExpenses?.toFixed(2) ?? '0.00'}\n\n`;
 
-      csv += `Net Income,${reportData.netIncome.toFixed(2)}\n`;
-      csv += `Profit Margin,${reportData.margin.toFixed(2)}%\n`;
+      csv += `Net Income,${reportData.netIncome?.toFixed(2) ?? '0.00'}\n`;
+      csv += `Profit Margin,${reportData.margin?.toFixed(2) ?? '0.00'}%\n`;
     }
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -326,14 +326,14 @@ export default function Reports() {
                       <div key={index} className="flex justify-between text-sm">
                         <span className="text-gray-700">{item.name}</span>
                         <span className="font-medium text-gray-900">
-                          ${item.amount.toFixed(2)}
+                          ${item.amount?.toFixed(2) ?? '0.00'}
                         </span>
                       </div>
                     ))}
                     <div className="flex justify-between text-sm font-semibold pt-2 border-t">
                       <span>Total Income</span>
                       <span className="text-green-600">
-                        ${reportData.totalIncome.toFixed(2)}
+                        ${reportData.totalIncome?.toFixed(2) ?? '0.00'}
                       </span>
                     </div>
                   </div>
@@ -353,14 +353,14 @@ export default function Reports() {
                       <div key={index} className="flex justify-between text-sm">
                         <span className="text-gray-700">{item.name}</span>
                         <span className="font-medium text-gray-900">
-                          ${item.amount.toFixed(2)}
+                          ${item.amount?.toFixed(2) ?? '0.00'}
                         </span>
                       </div>
                     ))}
                     <div className="flex justify-between text-sm font-semibold pt-2 border-t">
                       <span>Total Expenses</span>
                       <span className="text-red-600">
-                        ${reportData.totalExpenses.toFixed(2)}
+                        ${reportData.totalExpenses?.toFixed(2) ?? '0.00'}
                       </span>
                     </div>
                   </div>
@@ -375,16 +375,16 @@ export default function Reports() {
                   <span className="text-lg font-bold text-gray-900">Net Income</span>
                   <span
                     className={`text-2xl font-bold ${
-                      reportData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'
+                      (reportData.netIncome ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
-                    ${reportData.netIncome.toFixed(2)}
+                    ${reportData.netIncome?.toFixed(2) ?? '0.00'}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Profit Margin</span>
                   <span className="font-medium text-gray-900">
-                    {reportData.margin.toFixed(2)}%
+                    {reportData.margin?.toFixed(2) ?? '0.00'}%
                   </span>
                 </div>
               </div>
