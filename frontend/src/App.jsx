@@ -9,6 +9,7 @@ import Invoices from './pages/Invoices';
 import CreditCards from './pages/CreditCards';
 import Reports from './pages/Reports';
 import ChartOfAccounts from './pages/ChartOfAccounts';
+import CashFlow from './pages/CashFlow';
 import Layout from './components/Layout';
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/cash-flow" element={<CashFlow />} />
           <Route path="/accounts-payable" element={<AccountsPayable />} />
           <Route path="/accounts-receivable" element={<AccountsReceivable />} />
           <Route path="/invoices" element={<Invoices />} />
