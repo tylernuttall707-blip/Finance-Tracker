@@ -16,8 +16,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import {
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   ArrowPathIcon,
   ChartBarIcon,
@@ -244,7 +244,7 @@ export default function CashFlow() {
               </p>
             </div>
             <div className="bg-green-50 rounded-lg p-3">
-              <TrendingUpIcon className="h-6 w-6 text-green-600" />
+              <ArrowTrendingUpIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
@@ -258,7 +258,7 @@ export default function CashFlow() {
               </p>
             </div>
             <div className="bg-red-50 rounded-lg p-3">
-              <TrendingDownIcon className="h-6 w-6 text-red-600" />
+              <ArrowTrendingDownIcon className="h-6 w-6 text-red-600" />
             </div>
           </div>
         </div>
@@ -424,9 +424,9 @@ export default function CashFlow() {
                 } rounded-full p-2`}
               >
                 {summary.trend === 'up' ? (
-                  <TrendingUpIcon className="h-5 w-5" />
+                  <ArrowTrendingUpIcon className="h-5 w-5" />
                 ) : summary.trend === 'down' ? (
-                  <TrendingDownIcon className="h-5 w-5" />
+                  <ArrowTrendingDownIcon className="h-5 w-5" />
                 ) : (
                   <ChartBarIcon className="h-5 w-5" />
                 )}
