@@ -48,7 +48,7 @@ export default function Dashboard() {
       ]);
 
       setData(dashboardRes.data);
-      setRecentTransactions(transactionsRes.data?.slice(0, 5) || []);
+      setRecentTransactions(transactionsRes.data?.transactions?.slice(0, 5) || []);
       setRecentInvoices(invoicesRes.data?.slice(0, 5) || []);
 
       // Filter upcoming bills (unpaid)
@@ -60,7 +60,7 @@ export default function Dashboard() {
 
       // Calculate cash flow trend for last 7 days
       const last7Days = [];
-      const transactions = transactionsRes.data || [];
+      const transactions = transactionsRes.data?.transactions || [];
 
       for (let i = 6; i >= 0; i--) {
         const date = subDays(new Date(), i);
