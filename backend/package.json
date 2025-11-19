@@ -9,7 +9,9 @@
     "start": "node src/server.js",
     "migrate": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
-    "seed": "npx sequelize-cli db:seed:all"
+    "sync": "node scripts/sync-db.js",
+    "seed": "npx sequelize-cli db:seed:all",
+    "setup": "npm run sync && npm run seed"
   },
   "keywords": [
     "finance",
