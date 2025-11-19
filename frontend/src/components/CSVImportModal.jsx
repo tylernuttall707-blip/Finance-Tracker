@@ -133,7 +133,15 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, acco
 
   const handleImport = async () => {
     // Filter transactions with selected accounts
-    const transactionsToImport = transactions.filter(t => t.accountId);
+    const transactionsToImport = transactions
+      .filter(t => t.accountId)
+      .map(t => ({
+        date: t.date,
+        description: t.description,
+        amount: t.amount,
+        reference: t.reference || '',
+        accountId: t.accountId,
+      }));
 
     if (transactionsToImport.length === 0) {
       alert('Please select accounts for at least one transaction');
