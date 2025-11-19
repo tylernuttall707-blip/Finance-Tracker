@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction, getAccounts } from '../services/api';
-import { PlusIcon, PencilIcon, TrashIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, FunnelIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
@@ -9,6 +10,10 @@ export default function Transactions() {
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [filterType, setFilterType] = useState('all');
+  const [dateRange, setDateRange] = useState('all');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -93,8 +98,41 @@ export default function Transactions() {
   };
 
   const filteredTransactions = transactions.filter((t) => {
-    if (filterType === 'all') return true;
-    return t.type === filterType;
+    // Filter by type
+    if (filterType !== 'all' && t.type !== filterType) return false;
+
+    // Filter by search query
+    if (searchQuery && !t.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+
+    // Filter by date range
+    if (dateRange !== 'all') {
+      const txnDate = new Date(t.date);
+      const today = new Date();
+
+      if (dateRange === '7d') {
+        if (txnDate < subDays(today, 7)) return false;
+      } else if (dateRange === '30d') {
+        if (txnDate < subDays(today, 30)) return false;
+      } else if (dateRange === '90d') {
+        if (txnDate < subDays(today, 90)) return false;
+      } else if (dateRange === 'this-month') {
+        const start = startOfMonth(today);
+        const end = endOfMonth(today);
+        if (txnDate < start || txnDate > end) return false;
+      } else if (dateRange === 'last-month') {
+        const lastMonth = subMonths(today, 1);
+        const start = startOfMonth(lastMonth);
+        const end = endOfMonth(lastMonth);
+        if (txnDate < start || txnDate > end) return false;
+      } else if (dateRange === 'custom') {
+        if (customStartDate && txnDate < new Date(customStartDate)) return false;
+        if (customEndDate && txnDate > new Date(customEndDate)) return false;
+      }
+    }
+
+    return true;
   });
 
   const summary = transactions.reduce((acc, t) => {
@@ -151,21 +189,128 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* Filter */}
+      {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            <option value="all">All Transactions</option>
-            <option value="bank">Bank Transactions</option>
-            <option value="credit_card">Credit Card</option>
-            <option value="journal">Journal Entry</option>
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Type Filter */}
+          <div className="flex items-center gap-2">
+            <FunnelIcon className="h-5 w-5 text-gray-400" />
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">All Types</option>
+              <option value="bank">Bank</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="journal">Journal Entry</option>
+            </select>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5 text-gray-400" />
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">All Time</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+              <option value="this-month">This Month</option>
+              <option value="last-month">Last Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+
+          {/* Custom Date Range */}
+          {dateRange === 'custom' && (
+            <>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                placeholder="Start Date"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                placeholder="End Date"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+            </>
+          )}
+
+          {/* Search */}
+          <div className={dateRange === 'custom' ? 'md:col-span-2 lg:col-span-4' : ''}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search transactions..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+          </div>
         </div>
+
+        {/* Active Filters Display */}
+        {(filterType !== 'all' || dateRange !== 'all' || searchQuery) && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500">Active filters:</span>
+              {filterType !== 'all' && (
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                  Type: {filterType}
+                  <button
+                    onClick={() => setFilterType('all')}
+                    className="ml-1 hover:text-blue-600"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {dateRange !== 'all' && (
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                  Date: {dateRange}
+                  <button
+                    onClick={() => {
+                      setDateRange('all');
+                      setCustomStartDate('');
+                      setCustomEndDate('');
+                    }}
+                    className="ml-1 hover:text-blue-600"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {searchQuery && (
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                  Search: {searchQuery}
+                  <button onClick={() => setSearchQuery('')} className="ml-1 hover:text-blue-600">
+                    ×
+                  </button>
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setFilterType('all');
+                  setDateRange('all');
+                  setSearchQuery('');
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Transactions Table */}

@@ -8,11 +8,13 @@ import {
   BanknotesIcon,
   ArrowRightOnRectangleIcon,
   ListBulletIcon,
+  ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Transactions', href: '/transactions', icon: BanknotesIcon },
+  { name: 'Cash Flow', href: '/cash-flow', icon: ArrowTrendingUpIcon },
   { name: 'Chart of Accounts', href: '/chart-of-accounts', icon: ListBulletIcon },
   { name: 'Accounts Payable', href: '/accounts-payable', icon: DocumentTextIcon },
   { name: 'Accounts Receivable', href: '/accounts-receivable', icon: CurrencyDollarIcon },
