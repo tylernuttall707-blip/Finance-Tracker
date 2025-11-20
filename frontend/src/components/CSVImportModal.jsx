@@ -295,9 +295,10 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, acco
                     <p className="font-medium mb-1">CSV Format Guidelines:</p>
                     <ul className="list-disc list-inside space-y-1">
                       <li>File must include headers in the first row</li>
-                      <li>Required columns: Date, Description, Amount (or Debit/Credit)</li>
+                      <li>Required columns: Date, Description, Amount (or Debit/Credit/Expense/Payment)</li>
                       <li>Optional columns: Reference, Check Number, Transaction ID</li>
                       <li>Various date formats are supported (MM/DD/YYYY, YYYY-MM-DD, etc.)</li>
+                      <li>Amount columns: amount, debit, credit, expense, payment, withdrawal, deposit, etc.</li>
                     </ul>
                   </div>
                 </div>
